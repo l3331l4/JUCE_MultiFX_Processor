@@ -5,6 +5,9 @@
               jucerFormatVersion="1" cppLanguageStandard="20">
   <MAINGROUP id="ilFSzP" name="JUCE_MultiFX_Processor">
     <GROUP id="{FE41FCDF-6ADB-AA7B-2F0A-7F8540FA9483}" name="Source">
+      <GROUP id="{42EBA5AF-F2FE-9C9D-164C-6B632EA762F7}" name="DSP">
+        <FILE id="RptIrh" name="Fifo.h" compile="0" resource="0" file="SimpleMultiBandComp/Source/DSP/Fifo.h"/>
+      </GROUP>
       <FILE id="odUYoh" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="r3TrAZ" name="PluginProcessor.h" compile="0" resource="0"
@@ -19,7 +22,7 @@
     <VS2022 targetFolder="Builds/VisualStudio2022">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="JUCE_MultiFX_Processor"
-                       extraCompilerFlags="/std:c++20"/>
+                       extraCompilerFlags="/std:c++20" headerPath="..\..\SimpleMultiBandComp\Source\&#10;..\..\SimpleMultiBandComp\Source\GUI&#10;..\..\SimpleMultiBandComp\Source\DSP"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="JUCE_MultiFX_Processor"
                        extraCompilerFlags="/std:c++20"/>
       </CONFIGURATIONS>
