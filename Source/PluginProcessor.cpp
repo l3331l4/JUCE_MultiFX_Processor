@@ -15,6 +15,12 @@ auto getPhaserCenterFreqName() { return juce::String("Phaser Center Frequency (H
 auto getPhaserFeedbackName() { return juce::String("Phaser Feedback (%)"); }
 auto getPhaserMixName() { return juce::String("Phaser Mix (%)"); }
 
+auto getChorusRateName() { return juce::String("Chorus Rate (Hz)"); }
+auto getChorusDepthName() { return juce::String("Chorus Depth (%)"); }
+auto getChorusCenterDelayName() { return juce::String("Chorus Center Delay (Ms)"); }
+auto getChorusFeedbackName() { return juce::String("Chorus Feedback (%)"); }
+auto getChorusMixName() { return juce::String("Chorus Mix (%)"); }
+
 //==============================================================================
 JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -215,6 +221,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
         0.5f,
         "%"
 	));
+
+    /*
+    Chorus:
+    Rate: hz
+    Depth: 0 to 1
+	Center delay: ms (1 to 100)
+    Feedback: -1 to 1
+    Mix: 0 to 1
+    */
 
 
 	return layout;
