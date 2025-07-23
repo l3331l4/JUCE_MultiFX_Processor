@@ -41,6 +41,22 @@ auto getLadderFilterChoices()
     };
 }
 
+auto getGeneralFilterModeName() { return juce::String("General Filter Mode"); }
+auto getGeneralFilterFreqName() { return juce::String("General Filter Frequency (Hz)"); }
+auto getGeneralFilterQualityName() { return juce::String("General Filter Quality"); }
+auto getGeneralFilterGainName() { return juce::String("General Filter Gain (dB)"); }
+
+auto getGeneralFilterChoices()
+{
+    return juce::StringArray
+    {
+        "Peak",
+        "Bandpass",
+        "Notch",
+        "Allpass"
+    };
+}
+
 //==============================================================================
 JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -73,6 +89,10 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
         &ladderFilterCutoffHz,
         &ladderFilterResonance,
         &ladderFilterDrive,
+
+        &generalFilterFreqHz,
+        &generalFilterQuality,
+        &generalFilterGain,
     };
 
     auto floatNameFuncs = std::array
@@ -95,6 +115,10 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
         &getLadderFilterResonanceName,
         &getLadderFilterDriveName,
 
+		&getGeneralFilterFreqName,
+        &getGeneralFilterQualityName,
+		&getGeneralFilterGainName,
+
     };
 
     for (size_t i = 0; i < floatParams.size(); ++i)
@@ -104,8 +128,24 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 		jassert(*ptrToParamPtr != nullptr); // Ensure the parameter was created successfully
     }
 
-	ladderFilterMode = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(getLadderFilterModeName()));
-	jassert(ladderFilterMode != nullptr); // Ensure the parameter was created successfully
+	auto choiceParams = std::array
+    {
+        &ladderFilterMode,
+        &generalFilterMode,
+    };
+
+    auto choiceNameFuncs = std::array
+    {
+        &getLadderFilterModeName,
+        &getGeneralFilterModeName,
+    };
+
+    for (size_t i = 0; i < choiceParams.size(); ++i)
+    {
+        auto ptrToParamPtr = choiceParams[i];
+        *ptrToParamPtr = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter( choiceNameFuncs[i]() ));
+        jassert(*ptrToParamPtr != nullptr); // Ensure the parameter was created successfully
+	}
 
 }
 
@@ -383,6 +423,48 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
         ""
     ));
 
+    /*
+	General Filter:
+	Mode: Peak, Bandpass, Notch, Allpass
+	Frequency: Hz (20 to 20000) (1 Hz steps)
+	Q: 0.1 to 10 (0.05 steps)
+	Gain: -24db to +24db (0.5db steps)
+    */
+	name = getGeneralFilterModeName();
+	choices = getGeneralFilterChoices();
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        choices,
+        0 // Default to Peak
+	));
+
+    name = getGeneralFilterFreqName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        750.f,
+        "Hz"
+	));
+
+    name = getGeneralFilterQualityName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+        1.f,
+        ""
+    ));
+    name = getGeneralFilterGainName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+        0.0f,
+        "dB"
+	));
+
 	return layout;
 }
 
@@ -446,6 +528,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
                 break;
             case DSP_Option::LadderFilter:
                 dspPointers[i] = &ladderFilter;
+                break;
+			case DSP_Option::GeneralFilter:
+                dspPointers[i] = &generalFilter;
                 break;
 			case DSP_Option::END_OF_LIST:
 				jassertfalse; // This should never happen
