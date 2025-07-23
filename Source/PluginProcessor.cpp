@@ -505,7 +505,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
         buffer.clear (i, 0, buffer.getNumSamples());
 
 	// TODO: update the DSP chain based on the parameters
-    // TODO: save/load settings
 	// TODO: save/load DSP order
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
@@ -561,13 +560,13 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
 
-    for (size_t i = 0; i < dspPointers.size(); ++i)
+    /*for (size_t i = 0; i < dspPointers.size(); ++i)
     {
         if (dspPointers[i] != nullptr)
         {
             dspPointers[i]->process(context);
 		}
-    }
+    }*/
 
 }
 
@@ -579,7 +578,8 @@ bool JUCE_MultiFX_ProcessorAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* JUCE_MultiFX_ProcessorAudioProcessor::createEditor()
 {
-    return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
+    //return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
+	return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -588,12 +588,22 @@ void JUCE_MultiFX_ProcessorAudioProcessor::getStateInformation (juce::MemoryBloc
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+	juce::MemoryOutputStream mos(destData, false);
+    apvts.state.writeToStream(mos);
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+	auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid())
+    {
+        apvts.replaceState(tree);
+    }
+
 }
 
 //==============================================================================
