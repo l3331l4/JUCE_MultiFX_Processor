@@ -144,6 +144,22 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    // TODO: add APVTS
+	// TODO: create audio parameters for all DSP options
+	// TODO: update the DSP chain based on the parameters
+    // TODO: save/load settings
+	// TODO: save/load DSP order
+	// TODO: drag to reorder GUI
+	// TODO: GUI design for each DSP option
+    // TODO: metering
+	// TODO: prepare all DSP options
+	// TODO: wet/dry mix control [STRETCH]
+	// TODO: mono and stereo versions [STRETCH]
+	// TODO: modulators (eg. LFOs, envelopes, etc.) [STRETCH]
+	// TODO: thread-safe filter updates [STRETCH]
+	// TODO: pre/post filtering [STRETCH]
+	// TODO: delay module [STRETCH]
+
     auto newDSPOrder = DSP_Order();
 
 	// Try to pull the DSP order from the FIFO
