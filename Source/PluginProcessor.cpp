@@ -504,8 +504,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	// TODO: update the DSP chain based on the parameters
 	// TODO: save/load DSP order
+    // TODO: update general filter coefficients
+	// TODO: add smoothing to parameters
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
     // TODO: metering
@@ -515,6 +516,25 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	// TODO: thread-safe filter updates [STRETCH]
 	// TODO: pre/post filtering [STRETCH]
 	// TODO: delay module [STRETCH]
+
+	phaser.dsp.setRate(phaserRateHz->get());
+	phaser.dsp.setDepth(phaserDepthPercent->get());
+	phaser.dsp.setCentreFrequency(phaserCenterFreqHz->get());
+	phaser.dsp.setFeedback(phaserFeedbackPercent->get());
+	phaser.dsp.setMix(phaserMixPercent->get());
+
+	chorus.dsp.setRate(chorusRateHz->get());
+	chorus.dsp.setDepth(chorusDepthPercent->get());
+	chorus.dsp.setCentreDelay(chorusCenterDelayMs->get() / 1000.0f);
+	chorus.dsp.setFeedback(chorusFeedbackPercent->get());
+	chorus.dsp.setMix(chorusMixPercent->get());
+
+	overdrive.dsp.setDrive(overdriveSaturation->get());
+
+	ladderFilter.dsp.setMode(static_cast<juce::dsp::LadderFilter<float>::Mode>(ladderFilterMode->getIndex()));
+	ladderFilter.dsp.setCutoffFrequencyHz(ladderFilterCutoffHz->get());
+	ladderFilter.dsp.setResonance(ladderFilterResonance->get());
+	ladderFilter.dsp.setDrive(ladderFilterDrive->get());
 
     auto newDSPOrder = DSP_Order();
 
@@ -560,13 +580,13 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
 
-    /*for (size_t i = 0; i < dspPointers.size(); ++i)
+    for (size_t i = 0; i < dspPointers.size(); ++i)
     {
         if (dspPointers[i] != nullptr)
         {
             dspPointers[i]->process(context);
 		}
-    }*/
+    }
 
 }
 
