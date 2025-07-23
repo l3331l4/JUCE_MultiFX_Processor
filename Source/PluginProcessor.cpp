@@ -220,6 +220,27 @@ void JUCE_MultiFX_ProcessorAudioProcessor::prepareToPlay (double sampleRate, int
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+	juce::dsp::ProcessSpec spec;
+	spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+	spec.numChannels = getTotalNumInputChannels();
+
+    std::vector<juce::dsp::ProcessorBase*> dsp
+    {
+        &phaser,
+        &chorus,
+        &overdrive,
+        &ladderFilter,
+        &generalFilter
+    };
+
+    for (auto p : dsp)
+    {
+		p->prepare(spec);
+		p->reset();
+    }
+
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessor::releaseResources()
@@ -483,14 +504,12 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	// TODO: create audio parameters for all DSP options
 	// TODO: update the DSP chain based on the parameters
     // TODO: save/load settings
 	// TODO: save/load DSP order
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
     // TODO: metering
-	// TODO: prepare all DSP options
 	// TODO: wet/dry mix control [STRETCH]
 	// TODO: mono and stereo versions [STRETCH]
 	// TODO: modulators (eg. LFOs, envelopes, etc.) [STRETCH]
