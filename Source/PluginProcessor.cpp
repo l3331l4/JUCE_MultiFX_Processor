@@ -23,6 +23,24 @@ auto getChorusMixName() { return juce::String("Chorus Mix (%)"); }
 
 auto getOverdriveSaturationName() { return juce::String("Overdrive Saturation"); }
 
+auto getLadderFilterModeName() { return juce::String("Ladder Filter Mode"); }
+auto getLadderFilterCutoffName() { return juce::String("Ladder Filter Cutoff (Hz)"); }
+auto getLadderFilterResonanceName() { return juce::String("Ladder Filter Resonance"); }
+auto getLadderFilterDriveName() { return juce::String("Ladder Filter Drive"); }
+
+auto getLadderFilterChoices() 
+{
+    return juce::StringArray
+    {
+        "LPF12", // low-pass  12 dB/octave 
+        "HPF12", // high-pass 12 dB/octave 
+        "BPF12", // band-pass 12 dB/octave 
+        "LPF24", // low-pass  24 dB/octave 
+        "HPF24", // high-pass 24 dB/octave 
+        "BPF24"  // band-pass 24 dB/octave 
+    };
+}
+
 //==============================================================================
 JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -51,6 +69,10 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
         &chorusMixPercent,
 
         &overdriveSaturation,
+
+        &ladderFilterCutoffHz,
+        &ladderFilterResonance,
+        &ladderFilterDrive,
     };
 
     auto floatNameFuncs = std::array
@@ -68,6 +90,11 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
         &getChorusMixName,
 
 		&getOverdriveSaturationName,
+
+        &getLadderFilterCutoffName,
+        &getLadderFilterResonanceName,
+        &getLadderFilterDriveName,
+
     };
 
     for (size_t i = 0; i < floatParams.size(); ++i)
@@ -76,6 +103,9 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 		*ptrToParamPtr = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter( floatNameFuncs[i]() ));
 		jassert(*ptrToParamPtr != nullptr); // Ensure the parameter was created successfully
     }
+
+	ladderFilterMode = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(getLadderFilterModeName()));
+	jassert(ladderFilterMode != nullptr); // Ensure the parameter was created successfully
 
 }
 
@@ -309,6 +339,49 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
         ""
 	));
 
+    /*
+	Ladder Filter:
+    Mode: LadderFilterMode enum (int)
+	Cutoff: Hz
+	Resonance: 0 to 1
+	Drive: 1 to 100
+    */
+
+	name = getLadderFilterModeName();
+	auto choices = getLadderFilterChoices();
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        choices,
+        0 // Default to LPF12
+	));
+
+	name = getLadderFilterCutoffName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(20.f, 20000.f, 0.1f, 1.f),
+        20000.f,
+        "Hz"
+    ));
+
+	name = getLadderFilterResonanceName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(0.0f, 1.f, 0.01f, 1.f),
+        0.0f,
+        ""
+    ));
+
+	name = getLadderFilterDriveName();
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        juce::NormalisableRange<float>(1.f, 100.f, 0.1f, 1.f),
+        1.f,
+        ""
+    ));
 
 	return layout;
 }
