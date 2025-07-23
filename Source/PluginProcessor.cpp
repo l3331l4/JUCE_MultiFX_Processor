@@ -129,6 +129,12 @@ bool JUCE_MultiFX_ProcessorAudioProcessor::isBusesLayoutSupported (const BusesLa
 }
 #endif
 
+juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioProcessor::createParameterlayout() {
+
+	juce::AudioProcessorValueTreeState::ParameterLayout layout;
+	return layout;
+}
+
 void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -144,7 +150,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // TODO: add APVTS
 	// TODO: create audio parameters for all DSP options
 	// TODO: update the DSP chain based on the parameters
     // TODO: save/load settings
