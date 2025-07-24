@@ -248,8 +248,18 @@ void JUCE_MultiFX_ProcessorAudioProcessor::prepareToPlay (double sampleRate, int
 	juce::dsp::ProcessSpec spec;
 	spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-	spec.numChannels = getTotalNumInputChannels();
+	spec.numChannels = 1;
 
+    leftChannel.prepare(spec);
+	rightChannel.prepare(spec);
+
+    
+
+}
+
+void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::prepare(const juce::dsp::ProcessSpec& spec)
+{
+	jassert(spec.numChannels == 1); // This DSP is designed for mono channels only
     std::vector<juce::dsp::ProcessorBase*> dsp
     {
         &phaser,
@@ -261,10 +271,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::prepareToPlay (double sampleRate, int
 
     for (auto p : dsp)
     {
-		p->prepare(spec);
-		p->reset();
+        p->prepare(spec);
+        p->reset();
     }
-
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessor::releaseResources()
@@ -550,6 +559,29 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
 	return layout;
 }
 
+void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::updateDSPFromParams()
+{
+    phaser.dsp.setRate(p.phaserRateHz->get());
+    phaser.dsp.setDepth(p.phaserDepthPercent->get());
+    phaser.dsp.setCentreFrequency(p.phaserCenterFreqHz->get());
+    phaser.dsp.setFeedback(p.phaserFeedbackPercent->get());
+    phaser.dsp.setMix(p.phaserMixPercent->get());
+
+    chorus.dsp.setRate(p.chorusRateHz->get());
+    chorus.dsp.setDepth(p.chorusDepthPercent->get());
+    chorus.dsp.setCentreDelay(p.chorusCenterDelayMs->get() / 1000.0f);
+    chorus.dsp.setFeedback(p.chorusFeedbackPercent->get());
+    chorus.dsp.setMix(p.chorusMixPercent->get());
+
+    overdrive.dsp.setDrive(p.overdriveSaturation->get());
+
+    ladderFilter.dsp.setMode(static_cast<juce::dsp::LadderFilter<float>::Mode>(p.ladderFilterMode->getIndex()));
+    ladderFilter.dsp.setCutoffFrequencyHz(p.ladderFilterCutoffHz->get());
+    ladderFilter.dsp.setResonance(p.ladderFilterResonance->get());
+    ladderFilter.dsp.setDrive(p.ladderFilterDrive->get());
+}
+
+
 void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -566,7 +598,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
         buffer.clear (i, 0, buffer.getNumSamples());
 
     // TODO: update general filter coefficients
-    // TODO: mono filters, not stereo
 	// TODO: add smoothing to parameters
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
@@ -578,24 +609,8 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	// TODO: pre/post filtering [STRETCH]
 	// TODO: delay module [STRETCH]
 
-	phaser.dsp.setRate(phaserRateHz->get());
-	phaser.dsp.setDepth(phaserDepthPercent->get());
-	phaser.dsp.setCentreFrequency(phaserCenterFreqHz->get());
-	phaser.dsp.setFeedback(phaserFeedbackPercent->get());
-	phaser.dsp.setMix(phaserMixPercent->get());
-
-	chorus.dsp.setRate(chorusRateHz->get());
-	chorus.dsp.setDepth(chorusDepthPercent->get());
-	chorus.dsp.setCentreDelay(chorusCenterDelayMs->get() / 1000.0f);
-	chorus.dsp.setFeedback(chorusFeedbackPercent->get());
-	chorus.dsp.setMix(chorusMixPercent->get());
-
-	overdrive.dsp.setDrive(overdriveSaturation->get());
-
-	ladderFilter.dsp.setMode(static_cast<juce::dsp::LadderFilter<float>::Mode>(ladderFilterMode->getIndex()));
-	ladderFilter.dsp.setCutoffFrequencyHz(ladderFilterCutoffHz->get());
-	ladderFilter.dsp.setResonance(ladderFilterResonance->get());
-	ladderFilter.dsp.setDrive(ladderFilterDrive->get());
+	leftChannel.updateDSPFromParams();
+	rightChannel.updateDSPFromParams();
 
     auto newDSPOrder = DSP_Order();
 
@@ -611,50 +626,58 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     if ( newDSPOrder != DSP_Order() )
 		dspOrder = newDSPOrder;
 
-	// Convert DSP_Order to DSP_Pointers
-	DSP_Pointers dspPointers;
-	//dspPointers.fill(nullptr); // Initialize all pointers to nullptr
+	auto block = juce::dsp::AudioBlock<float>(buffer);
+
+	leftChannel.process(block.getSingleChannelBlock(0), dspOrder);
+	rightChannel.process(block.getSingleChannelBlock(1), dspOrder);
+
+}
+
+void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::process(juce::dsp::AudioBlock<float> block, const DSP_Order &dspOrder)
+{
+    // Convert DSP_Order to DSP_Pointers
+    DSP_Pointers dspPointers;
+    //dspPointers.fill(nullptr); // Initialize all pointers to nullptr
     dspPointers.fill({});
 
-    for( size_t i = 0; i < dspPointers.size(); ++i )
+    for (size_t i = 0; i < dspPointers.size(); ++i)
     {
         switch (dspOrder[i])
         {
-            case DSP_Option::Phase:
-                dspPointers[i].processor = &phaser;
-				dspPointers[i].bypassed = phaserBypass->get();
-                break;
-            case DSP_Option::Chorus:
-                dspPointers[i].processor = &chorus;
-				dspPointers[i].bypassed = chorusBypass->get();
-                break;
-            case DSP_Option::Overdrive:
-                dspPointers[i].processor = &overdrive;
-				dspPointers[i].bypassed = overdriveBypass->get();
-                break;
-            case DSP_Option::LadderFilter:
-                dspPointers[i].processor = &ladderFilter;
-				dspPointers[i].bypassed = ladderFilterBypass->get();
-                break;
-			case DSP_Option::GeneralFilter:
-                dspPointers[i].processor = &generalFilter;
-				dspPointers[i].bypassed = generalFilterBypass->get();
-                break;
-			case DSP_Option::END_OF_LIST:
-				jassertfalse; // This should never happen
-                break;
+        case DSP_Option::Phase:
+            dspPointers[i].processor = &phaser;
+            dspPointers[i].bypassed = p.phaserBypass->get();
+            break;
+        case DSP_Option::Chorus:
+            dspPointers[i].processor = &chorus;
+            dspPointers[i].bypassed = p.chorusBypass->get();
+            break;
+        case DSP_Option::Overdrive:
+            dspPointers[i].processor = &overdrive;
+            dspPointers[i].bypassed = p.overdriveBypass->get();
+            break;
+        case DSP_Option::LadderFilter:
+            dspPointers[i].processor = &ladderFilter;
+            dspPointers[i].bypassed = p.ladderFilterBypass->get();
+            break;
+        case DSP_Option::GeneralFilter:
+            dspPointers[i].processor = &generalFilter;
+            dspPointers[i].bypassed = p.generalFilterBypass->get();
+            break;
+        case DSP_Option::END_OF_LIST:
+            jassertfalse; // This should never happen
+            break;
         }
-	}
+    }
 
-	// Process the audio through the DSP chain
-	auto block = juce::dsp::AudioBlock<float>(buffer);
+    // Process the audio through the DSP chain
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
 
     for (size_t i = 0; i < dspPointers.size(); ++i)
     {
         if (dspPointers[i].processor != nullptr)
         {
-			juce::ScopedValueSetter<bool> svs(context.isBypassed, dspPointers[i].bypassed);
+            juce::ScopedValueSetter<bool> svs(context.isBypassed, dspPointers[i].bypassed);
 
 #if VERIFY_BYPASS_FUNCTIONALITY
             if (context.isBypassed)
@@ -666,14 +689,13 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
             {
                 continue;
             }
-            
+
 #endif
-            
+
 
             dspPointers[i].processor->process(context);
-		}
+        }
     }
-
 }
 
 //==============================================================================

@@ -14,10 +14,10 @@
 //==============================================================================
 /**
 */
-class JUCE_MultiFX_ProcessorAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class JUCE_MultiFX_ProcessorAudioProcessor : public juce::AudioProcessor
+#if JucePlugin_Enable_ARA
+    , public juce::AudioProcessorARAExtension
+#endif
 {
 public:
     //==============================================================================
@@ -25,14 +25,14 @@ public:
     ~JUCE_MultiFX_ProcessorAudioProcessor() override;
 
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
-   #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
+#ifndef JucePlugin_PreferredChannelConfigurations
+    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+#endif
 
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -49,13 +49,13 @@ public:
     //==============================================================================
     int getNumPrograms() override;
     int getCurrentProgram() override;
-    void setCurrentProgram (int index) override;
-    const juce::String getProgramName (int index) override;
-    void changeProgramName (int index, const juce::String& newName) override;
+    void setCurrentProgram(int index) override;
+    const juce::String getProgramName(int index) override;
+    void changeProgramName(int index, const juce::String& newName) override;
 
     //==============================================================================
-    void getStateInformation (juce::MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
+    void getStateInformation(juce::MemoryBlock& destData) override;
+    void setStateInformation(const void* data, int sizeInBytes) override;
 
     enum class DSP_Option
     {
@@ -63,15 +63,15 @@ public:
         Chorus,
         Overdrive,
         LadderFilter,
-		GeneralFilter,
+        GeneralFilter,
         END_OF_LIST
     };
 
-	static juce::AudioProcessorValueTreeState::ParameterLayout createParameterlayout();
-	juce::AudioProcessorValueTreeState apvts{ *this, nullptr, "Settings", createParameterlayout() };
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterlayout();
+    juce::AudioProcessorValueTreeState apvts{ *this, nullptr, "Settings", createParameterlayout() };
 
-	using DSP_Order = std::array<DSP_Option, static_cast<size_t>(DSP_Option::END_OF_LIST)>;
-	SimpleMBComp::Fifo<DSP_Order> dspOrderFifo;
+    using DSP_Order = std::array<DSP_Option, static_cast<size_t>(DSP_Option::END_OF_LIST)>;
+    SimpleMBComp::Fifo<DSP_Order> dspOrderFifo;
 
     /*
     Phaser:
@@ -88,7 +88,7 @@ public:
     juce::AudioParameterFloat* phaserFeedbackPercent = nullptr;
     juce::AudioParameterFloat* phaserMixPercent = nullptr;
     juce::AudioParameterBool* phaserBypass = nullptr;
-    
+
     juce::AudioParameterFloat* chorusRateHz = nullptr;
     juce::AudioParameterFloat* chorusDepthPercent = nullptr;
     juce::AudioParameterFloat* chorusCenterDelayMs = nullptr;
@@ -100,9 +100,9 @@ public:
     juce::AudioParameterBool* overdriveBypass = nullptr;
 
     juce::AudioParameterChoice* ladderFilterMode = nullptr;
-	juce::AudioParameterFloat* ladderFilterCutoffHz = nullptr;
-	juce::AudioParameterFloat* ladderFilterResonance = nullptr;
-	juce::AudioParameterFloat* ladderFilterDrive = nullptr;
+    juce::AudioParameterFloat* ladderFilterCutoffHz = nullptr;
+    juce::AudioParameterFloat* ladderFilterResonance = nullptr;
+    juce::AudioParameterFloat* ladderFilterDrive = nullptr;
     juce::AudioParameterBool* ladderFilterBypass = nullptr;
 
     juce::AudioParameterChoice* generalFilterMode = nullptr;
@@ -119,25 +119,41 @@ private:
     {
         void prepare(const juce::dsp::ProcessSpec& spec) override
         {
-			dsp.prepare(spec);
+            dsp.prepare(spec);
         }
-		void process(const juce::dsp::ProcessContextReplacing<float>& context) override
+        void process(const juce::dsp::ProcessContextReplacing<float>& context) override
         {
-			dsp.process(context);
+            dsp.process(context);
         }
         void reset() override
         {
-			dsp.reset();
+            dsp.reset();
         }
 
-		DSP dsp;
+        DSP dsp;
     };
 
-	DSP_Choice<juce::dsp::DelayLine<float>> delay;
-    DSP_Choice<juce::dsp::Phaser<float>> phaser;
-    DSP_Choice<juce::dsp::Chorus<float>> chorus;
-    DSP_Choice<juce::dsp::LadderFilter<float>> overdrive, ladderFilter;
-	DSP_Choice<juce::dsp::IIR::Filter<float>> generalFilter;
+    struct MonoChannelDSP
+    {
+		MonoChannelDSP(JUCE_MultiFX_ProcessorAudioProcessor& proc) : p(proc) {}
+        DSP_Choice<juce::dsp::DelayLine<float>> delay;
+        DSP_Choice<juce::dsp::Phaser<float>> phaser;
+        DSP_Choice<juce::dsp::Chorus<float>> chorus;
+        DSP_Choice<juce::dsp::LadderFilter<float>> overdrive, ladderFilter;
+        DSP_Choice<juce::dsp::IIR::Filter<float>> generalFilter;
+
+        void prepare(const juce::dsp::ProcessSpec& spec);
+
+        void updateDSPFromParams();
+
+		void process(juce::dsp::AudioBlock<float> block, const DSP_Order& dspOrder);
+
+	private:
+        JUCE_MultiFX_ProcessorAudioProcessor& p;
+    };
+
+	MonoChannelDSP leftChannel { *this };
+	MonoChannelDSP rightChannel { *this };
 
     struct ProcessState
     {
