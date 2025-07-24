@@ -70,6 +70,15 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
                        )
 #endif
 {
+
+    dspOrder =
+    {{
+		DSP_Option::Phase,
+        DSP_Option::Chorus,
+        DSP_Option::Overdrive,
+		DSP_Option::LadderFilter,
+    }};
+
     auto floatParams = std::array
     {
 		&phaserRateHz,
@@ -504,8 +513,8 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	// TODO: save/load DSP order
     // TODO: update general filter coefficients
+    // TODO: mono filters, not stereo
 	// TODO: add smoothing to parameters
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
@@ -550,6 +559,7 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 
 	// Convert DSP_Order to DSP_Pointers
 	DSP_Pointers dspPointers;
+	dspPointers.fill(nullptr); // Initialize all pointers to nullptr
 
     for( size_t i = 0; i < dspPointers.size(); ++i )
     {
@@ -598,16 +608,69 @@ bool JUCE_MultiFX_ProcessorAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* JUCE_MultiFX_ProcessorAudioProcessor::createEditor()
 {
-    //return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
-	return new juce::GenericAudioProcessorEditor(*this);
+    return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
+	//return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
+
+template<>
+struct juce::VariantConverter<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order>
+{
+    static JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order fromVar(const juce::var& v)
+    {
+		using T = JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order;
+		T dspOrder;
+
+		jassert(v.isBinaryData()); // Ensure the var is a binary data type
+        if (v.isBinaryData() == false)
+        {
+			dspOrder.fill(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::END_OF_LIST);
+        }
+        else
+        {
+			auto mb = *v.getBinaryData();
+			juce::MemoryInputStream mis(mb, false);
+			std::vector<int> arr;
+            while (!mis.isExhausted())
+            {
+				arr.push_back(mis.readInt());
+            }
+
+			jassert(arr.size() == dspOrder.size()); // Ensure we don't overflow the dspOrder array
+
+            for (size_t i = 0; i < dspOrder.size(); i++)
+            {
+                dspOrder[i] = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(arr[i]);
+            }
+        }
+		return dspOrder;
+	}
+     
+    static juce::var toVar(const JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order& t)
+    {
+        juce::MemoryBlock mb;
+
+        //JUCE memory output stream uses scoping to complete writing to the MemoryBlock
+        {
+            juce::MemoryOutputStream mos(mb, false);
+
+            for (const auto& v : t)
+            {
+				mos.writeInt(static_cast<int>(v));
+            }
+		}
+        return mb;
+    }
+};
+
 void JUCE_MultiFX_ProcessorAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+	apvts.state.setProperty("dspOrder", juce::VariantConverter<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order>::toVar(dspOrder), nullptr);
 
 	juce::MemoryOutputStream mos(destData, false);
     apvts.state.writeToStream(mos);
@@ -622,6 +685,14 @@ void JUCE_MultiFX_ProcessorAudioProcessor::setStateInformation (const void* data
     if (tree.isValid())
     {
         apvts.replaceState(tree);
+
+        if (apvts.state.hasProperty("dspOrder"))
+        {
+            auto order = juce::VariantConverter<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order>::fromVar(
+                apvts.state.getProperty("dspOrder"));
+			dspOrderFifo.push(order);
+        }
+		DBG(apvts.state.toXmlString());
     }
 
 }

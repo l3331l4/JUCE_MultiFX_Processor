@@ -29,5 +29,7 @@ private:
     // access the processor object that created it.
     JUCE_MultiFX_ProcessorAudioProcessor& audioProcessor;
 
+	juce::TextButton dspOrderButton{ "Change DSP Order" };
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JUCE_MultiFX_ProcessorAudioProcessorEditor)
 };
