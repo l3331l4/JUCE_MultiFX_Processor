@@ -616,7 +616,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	// Try to pull the DSP order from the FIFO
     while (dspOrderFifo.pull(newDSPOrder))
     {
-
+#if VERIFY_BYPASS_FUNCTIONALITY
+        jassertfalse;
+#endif
     }
 
 	// If the DSP order has changed, we need to reconfigure the DSP chain
@@ -667,6 +669,21 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
         if (dspPointers[i].processor != nullptr)
         {
 			juce::ScopedValueSetter<bool> svs(context.isBypassed, dspPointers[i].bypassed);
+
+#if VERIFY_BYPASS_FUNCTIONALITY
+            if (context.isBypassed)
+            {
+                jassertfalse;
+            }
+
+            if (dspPointers[i].processor == &generalFilter)
+            {
+                continue;
+            }
+            
+#endif
+            
+
             dspPointers[i].processor->process(context);
 		}
     }
@@ -763,11 +780,23 @@ void JUCE_MultiFX_ProcessorAudioProcessor::setStateInformation (const void* data
         {
             auto order = juce::VariantConverter<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order>::fromVar(
                 apvts.state.getProperty("dspOrder"));
-			dspOrderFifo.push(order);
+            dspOrderFifo.push(order);
         }
-		DBG(apvts.state.toXmlString());
-    }
+        DBG(apvts.state.toXmlString());
 
+#if VERIFY_BYPASS_FUNCTIONALITY 
+        juce::Timer::callAfterDelay(1000, [this]()
+            {
+                DSP_Order dspOrder;
+                dspOrder.fill(DSP_Option::LadderFilter);
+                dspOrder[0] = DSP_Option::Overdrive;
+
+                overdriveBypass->setValueNotifyingHost(1.f);
+                dspOrderFifo.push(dspOrder);
+            });
+#endif
+
+    }
 }
 
 //==============================================================================
