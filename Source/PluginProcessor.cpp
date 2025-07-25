@@ -76,13 +76,10 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 #endif
 {
 
-    dspOrder =
-    {{
-		DSP_Option::Phase,
-        DSP_Option::Chorus,
-        DSP_Option::Overdrive,
-		DSP_Option::LadderFilter,
-    }};
+    for (size_t i = 0; i < static_cast<size_t>(DSP_Option::END_OF_LIST); ++i)
+    {
+		dspOrder[i] = static_cast<DSP_Option>(i);
+	}
 
     auto floatParams = std::array
     {
@@ -579,6 +576,64 @@ void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::updateDSPFromParams()
     ladderFilter.dsp.setCutoffFrequencyHz(p.ladderFilterCutoffHz->get());
     ladderFilter.dsp.setResonance(p.ladderFilterResonance->get());
     ladderFilter.dsp.setDrive(p.ladderFilterDrive->get());
+
+    auto sampleRate = p.getSampleRate();
+
+	// Update the general filter coefficients based on the current parameters
+	auto genMode = p.generalFilterMode->getIndex();
+	auto genHz = p.generalFilterFreqHz->get();
+	auto genQ = p.generalFilterQuality->get();
+    auto genGain = p.generalFilterGain->get();
+
+	bool filterChanged = false;
+
+    filterChanged |= (filterFreq != genHz);
+    filterChanged |= (filterQ != genQ);
+    filterChanged |= (filterGain != genGain);
+
+	auto updatedMode = static_cast<GeneralFilterMode>(genMode);
+    filterChanged |= (filterMode != updatedMode);
+
+    if (filterChanged)
+    {
+        filterMode = updatedMode;
+        filterFreq = genHz;
+        filterQ = genQ;
+        filterGain = genGain;
+
+        juce::dsp::IIR::Coefficients<float>::Ptr coefficients;
+
+        switch (filterMode)
+        {
+        case GeneralFilterMode::Peak:
+            coefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate, filterFreq, filterQ, juce::Decibels::decibelsToGain(filterGain));
+            break;
+        case GeneralFilterMode::Bandpass:
+            coefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass(sampleRate, filterFreq, filterQ);
+            break;
+        case GeneralFilterMode::Notch:
+            coefficients = juce::dsp::IIR::Coefficients<float>::makeNotch(sampleRate, filterFreq, filterQ);
+            break;
+        case GeneralFilterMode::Allpass:
+            coefficients = juce::dsp::IIR::Coefficients<float>::makeAllPass(sampleRate, filterFreq, filterQ);
+            break;
+        case GeneralFilterMode::END_OF_LIST:
+            jassertfalse; // This should never happen
+            break;
+        }
+
+        if (coefficients != nullptr)
+        {
+            //if (generalFilter.dsp.coefficients->coefficients.size() != coefficients->coefficients.size())
+            //{
+            //    jassertfalse; // Coefficients size mismatch
+            //}
+            *generalFilter.dsp.coefficients = *coefficients;
+            generalFilter.reset();
+        }
+    }
+
+
 }
 
 
@@ -597,7 +652,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // TODO: update general filter coefficients
 	// TODO: add smoothing to parameters
 	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
