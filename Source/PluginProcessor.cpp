@@ -853,8 +853,8 @@ bool JUCE_MultiFX_ProcessorAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* JUCE_MultiFX_ProcessorAudioProcessor::createEditor()
 {
-    //return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
-	return new juce::GenericAudioProcessorEditor(*this);
+    return new JUCE_MultiFX_ProcessorAudioProcessorEditor (*this);
+	//return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================

@@ -9,6 +9,27 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+static juce::String getDSPOptionName(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option)
+{
+    switch (option)
+    {
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::Phase:
+        return "PHASE";
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::Chorus:
+        return "CHORUS";
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::Overdrive:
+        return "OVERDRIVE";
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::LadderFilter:
+        return "LADDERFILTER";
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::GeneralFilter:
+        return "GENFILTER";
+    case JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::END_OF_LIST:
+        jassertfalse;
+    }
+
+	return "NO SELECTION";
+}
+
 //==============================================================================
 JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessorEditor (JUCE_MultiFX_ProcessorAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
@@ -22,13 +43,16 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 
 			auto range = juce::Range<int>(static_cast<int>(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::Phase), 
                 static_cast<int>(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::END_OF_LIST));
+
+			tabbedComponent.clearTabs();
+
             for (auto& option : dspOrder)
             {
 				auto entry = random.nextInt(range);
-				option = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(random.nextInt(range));
+				option = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(entry);
+				tabbedComponent.addTab(getDSPOptionName(option), juce::Colours::white, -1);
             }
 			DBG(juce::Base64::toBase64(dspOrder.data(), dspOrder.size()));
-            jassertfalse;
 
 			audioProcessor.dspOrderFifo.push(dspOrder);
 
@@ -36,6 +60,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 
 
 	addAndMakeVisible(dspOrderButton);
+	addAndMakeVisible(tabbedComponent);
     setSize (400, 300);
 }
 
@@ -58,6 +83,9 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+	auto bounds = getLocalBounds();
+	dspOrderButton.setBounds(bounds.removeFromTop(30).withSizeKeepingCentre(150,30));
+    bounds.removeFromTop(10);
+    tabbedComponent.setBounds(bounds.withHeight(30));
 
-	dspOrderButton.setBounds(getLocalBounds().reduced(100));
 }

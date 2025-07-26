@@ -11,6 +11,27 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+struct ExtendedTabbedButtonBar : juce::TabbedButtonBar, juce::DragAndDropTarget
+{
+    ExtendedTabbedButtonBar() : juce::TabbedButtonBar(juce::TabbedButtonBar::Orientation::TabsAtTop) {}
+    
+    bool isInterestedInDragSource (const SourceDetails& dragSourceDetails) override
+    {
+        return false;
+	}
+
+    void itemDropped (const SourceDetails& dragSourceDetails) override
+    {
+        // Handle the drop event here
+	}
+};
+
+struct ExtendedTabBarButton : juce::TabBarButton
+{
+
+};
+
+
 //==============================================================================
 /**
 */
@@ -30,6 +51,8 @@ private:
     JUCE_MultiFX_ProcessorAudioProcessor& audioProcessor;
 
 	juce::TextButton dspOrderButton{ "Change DSP Order" };
+
+	ExtendedTabbedButtonBar tabbedComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JUCE_MultiFX_ProcessorAudioProcessorEditor)
 };
