@@ -9,7 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-static juce::String getDSPOptionName(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option)
+static juce::String getNameFromDSPOption(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option)
 {
     switch (option)
     {
@@ -281,7 +281,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
             {
 				auto entry = random.nextInt(range);
 				option = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(entry);
-				tabbedComponent.addTab(getDSPOptionName(option), juce::Colours::red, -1);
+				tabbedComponent.addTab(getNameFromDSPOption(option), juce::Colours::red, -1);
             }
 			DBG(juce::Base64::toBase64(dspOrder.data(), dspOrder.size()));
 
