@@ -30,6 +30,7 @@ static juce::String getDSPOptionName(JUCE_MultiFX_ProcessorAudioProcessor::DSP_O
 	return "NO SELECTION";
 }
 
+//==============================================================================
 HorizontalConstrainer::HorizontalConstrainer(std::function<juce::Rectangle<int>()> confinerBoundsGetter, 
     std::function<juce::Rectangle<int>()> confineeBoundsGetter)
     : 
@@ -66,6 +67,7 @@ void HorizontalConstrainer::checkBounds(juce::Rectangle<int>& bounds,
 
 	}
 
+//==============================================================================
 ExtendedTabBarButton::ExtendedTabBarButton(const juce::String& name, juce::TabbedButtonBar& owner)
     : juce::TabBarButton(name, owner)
 {
@@ -77,6 +79,32 @@ ExtendedTabBarButton::ExtendedTabBarButton(const juce::String& name, juce::Tabbe
     constrainer->setMinimumOnscreenAmounts(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
 }
 
+void ExtendedTabBarButton::mouseDown (const juce::MouseEvent& e)
+{
+    toFront(true);
+    dragger.startDraggingComponent(this, e);
+    juce::TabBarButton::mouseDown(e);
+}
+
+void ExtendedTabBarButton::mouseDrag(const juce::MouseEvent& e)
+{
+    dragger.dragComponent(this, e, constrainer.get());
+}
+
+//==============================================================================
+ExtendedTabbedButtonBar::ExtendedTabbedButtonBar() : juce::TabbedButtonBar(juce::TabbedButtonBar::Orientation::TabsAtTop) {}
+
+bool ExtendedTabbedButtonBar::isInterestedInDragSource(const SourceDetails& dragSourceDetails)
+{
+    return false;
+}
+
+void ExtendedTabbedButtonBar::itemDropped(const SourceDetails& dragSourceDetails) 
+{
+
+}
+
+//==============================================================================
 juce::TabBarButton* ExtendedTabbedButtonBar::createTabButton(const juce::String& tabName, int tabIndex)
 {
 	return new ExtendedTabBarButton(tabName, *this);
