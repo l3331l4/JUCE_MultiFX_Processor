@@ -75,6 +75,8 @@ struct ExtendedTabBarButton : juce::TabBarButton
 
     JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option getOption() const { return option; }
 
+    int getBestTabLength(int depth) override;
+
 private:
     JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option;
 

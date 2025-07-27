@@ -96,6 +96,14 @@ ExtendedTabBarButton::ExtendedTabBarButton(const juce::String& name, juce::Tabbe
     constrainer->setMinimumOnscreenAmounts(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
 }
 
+int ExtendedTabBarButton::getBestTabLength(int depth)
+{
+	auto bestWidth = getLookAndFeel().getTabButtonBestWidth(*this, depth);
+	auto& bar = getTabbedButtonBar();
+
+	return juce::jmax(bestWidth, bar.getWidth() / bar.getNumTabs());
+}
+
 void ExtendedTabBarButton::mouseDown (const juce::MouseEvent& e)
 {
     toFront(true);
@@ -293,7 +301,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 	addAndMakeVisible(dspOrderButton);
 	addAndMakeVisible(tabbedComponent);
 	tabbedComponent.addListener(this);
-    setSize (400, 300);
+    setSize (600, 400);
 }
 
 JUCE_MultiFX_ProcessorAudioProcessorEditor::~JUCE_MultiFX_ProcessorAudioProcessorEditor()
