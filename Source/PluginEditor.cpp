@@ -96,7 +96,73 @@ ExtendedTabbedButtonBar::ExtendedTabbedButtonBar() : juce::TabbedButtonBar(juce:
 
 bool ExtendedTabbedButtonBar::isInterestedInDragSource(const SourceDetails& dragSourceDetails)
 {
+    if (dynamic_cast<ExtendedTabBarButton*>(dragSourceDetails.sourceComponent.get()))
+        return true;
     return false;
+}
+
+void ExtendedTabbedButtonBar::itemDragEnter(const SourceDetails& dragSourceDetails)
+{
+    // This method is called when the mouse enters the tab bar while dragging.
+    juce::DragAndDropTarget::itemDragEnter(dragSourceDetails);
+}
+
+void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails& dragSourceDetails)
+{
+    if (auto tabButtonBeingDragged = dynamic_cast<ExtendedTabBarButton*>(dragSourceDetails.sourceComponent.get()))
+    {
+        auto numTabs = getNumTabs();
+        auto tabs = juce::Array<juce::TabBarButton*>();
+        tabs.resize(numTabs);
+        for (int i = 0; i < numTabs; ++i)
+        {
+            tabs.getReference(i) = getTabButton(i);
+        }
+        auto idx = tabs.indexOf(tabButtonBeingDragged);
+        if (idx == -1)
+        {
+            // The tab button being dragged is not in the current tab bar.
+            jassertfalse;
+            return;
+        }
+
+        auto previousTabIndex = idx - 1;
+        auto nextTabIndex = idx + 1;
+        auto previousTab = getTabButton(previousTabIndex);
+        auto nextTab = getTabButton(nextTabIndex);
+
+        if (previousTab == nullptr && nextTab != nullptr)
+        {
+            if (tabButtonBeingDragged->getX() > nextTab->getBounds().getCentreX())
+            {
+				moveTab(idx, nextTabIndex);
+            }
+        }
+        else if (previousTab != nullptr && nextTab == nullptr)
+        {
+            if (tabButtonBeingDragged->getX() < previousTab->getBounds().getCentreX())
+            {
+				moveTab(idx, previousTabIndex);
+            }
+        }
+        else 
+        {
+            if (tabButtonBeingDragged->getX() > nextTab->getBounds().getCentreX())
+            {
+                moveTab(idx, nextTabIndex);
+            }
+            else if (tabButtonBeingDragged->getX() < previousTab->getBounds().getCentreX())
+            {
+                moveTab(idx, previousTabIndex);
+            }
+        }
+    }
+}
+
+void ExtendedTabbedButtonBar::itemDragExit(const SourceDetails& dragSourceDetails)
+{
+    // This method is called when the mouse exits the tab bar while dragging.
+	juce::DragAndDropTarget::itemDragExit(dragSourceDetails);
 }
 
 void ExtendedTabbedButtonBar::itemDropped(const SourceDetails& dragSourceDetails) 
@@ -104,10 +170,20 @@ void ExtendedTabbedButtonBar::itemDropped(const SourceDetails& dragSourceDetails
 
 }
 
-//==============================================================================
+void ExtendedTabbedButtonBar::mouseDown(const juce::MouseEvent& e)
+{
+    if (auto tabButtonBeingDragged = dynamic_cast<ExtendedTabBarButton*>(e.originalComponent))
+    {
+		startDragging(tabButtonBeingDragged->TabBarButton::getTitle(),
+            tabButtonBeingDragged);
+    }
+}
+
 juce::TabBarButton* ExtendedTabbedButtonBar::createTabButton(const juce::String& tabName, int tabIndex)
 {
-	return new ExtendedTabBarButton(tabName, *this);
+	auto etbb = std::make_unique<ExtendedTabBarButton>(tabName, *this);
+	etbb->addMouseListener(this, false);
+	return etbb.release();
 }
 
 //==============================================================================
