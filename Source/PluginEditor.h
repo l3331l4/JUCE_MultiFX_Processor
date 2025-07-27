@@ -27,10 +27,21 @@ struct ExtendedTabbedButtonBar : juce::TabbedButtonBar, juce::DragAndDropTarget,
 
     juce::TabBarButton* createTabButton(const juce::String& tabName, int tabIndex) override;
 
+    struct Listener
+    {
+		virtual ~Listener() = default;
+		virtual void tabOrderChanged(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order newOrder) = 0;
+    };
+
+    void addListener(Listener* l);
+	void removeListener(Listener* l);
+
 private:
     juce::TabBarButton* findDraggedItem(const SourceDetails& dragSourceDetails);
 	int FindDraggedItemIndex(const SourceDetails& dragSourceDetails);
 	juce::Array<juce::TabBarButton*> getTabs();
+
+	juce::ListenerList<Listener> listeners;
 };
 
 struct HorizontalConstrainer : juce::ComponentBoundsConstrainer
@@ -53,7 +64,7 @@ private:
 
 struct ExtendedTabBarButton : juce::TabBarButton
 {
-    ExtendedTabBarButton(const juce::String& name, juce::TabbedButtonBar& owner);
+    ExtendedTabBarButton(const juce::String& name, juce::TabbedButtonBar& owner, JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option dspOption);
 	juce::ComponentDragger dragger;
 	std::unique_ptr<HorizontalConstrainer> constrainer;
 
@@ -61,13 +72,19 @@ struct ExtendedTabBarButton : juce::TabBarButton
 
     void mouseDrag(const juce::MouseEvent& e) override;
 
+    JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option getOption() const { return option; }
+
+private:
+    JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option;
+
 };
 
 
 //==============================================================================
 /**
 */
-class JUCE_MultiFX_ProcessorAudioProcessorEditor  : public juce::AudioProcessorEditor
+class JUCE_MultiFX_ProcessorAudioProcessorEditor  : public juce::AudioProcessorEditor,
+	ExtendedTabbedButtonBar::Listener
 {
 public:
     JUCE_MultiFX_ProcessorAudioProcessorEditor (JUCE_MultiFX_ProcessorAudioProcessor&);
@@ -76,6 +93,8 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+
+	void tabOrderChanged(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order newOrder) override;
 
 private:
     // This reference is provided as a quick way for your editor to
