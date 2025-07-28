@@ -295,32 +295,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    dspOrderButton.onClick = [this]()
-    {
-			juce::Random random;
-			JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order dspOrder;
 
-			auto range = juce::Range<int>(static_cast<int>(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::Phase), 
-                static_cast<int>(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::END_OF_LIST));
-
-			tabbedComponent.clearTabs();
-
-            for (auto& option : dspOrder)
-            {
-				auto entry = random.nextInt(range);
-				option = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(entry);
-				auto name = getNameFromDSPOption(option);
-				DBG("Adding tab: " + name);
-				tabbedComponent.addTab(name, juce::Colours::red, -1);
-            }
-			//DBG(juce::Base64::toBase64(dspOrder.data(), dspOrder.size()));
-
-			audioProcessor.dspOrderFifo.push(dspOrder);
-
-		};
-
-
-	addAndMakeVisible(dspOrderButton);
 	addAndMakeVisible(tabbedComponent);
 	tabbedComponent.addListener(this);
 	startTimerHz(30); // Timer to update the UI
@@ -348,7 +323,6 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 	auto bounds = getLocalBounds();
-	dspOrderButton.setBounds(bounds.removeFromTop(30).withSizeKeepingCentre(150,30));
     bounds.removeFromTop(10);
     tabbedComponent.setBounds(bounds.withHeight(30));
 

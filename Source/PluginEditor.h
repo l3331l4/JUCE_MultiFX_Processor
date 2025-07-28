@@ -105,8 +105,6 @@ private:
     // access the processor object that created it.
     JUCE_MultiFX_ProcessorAudioProcessor& audioProcessor;
 
-	juce::TextButton dspOrderButton{ "Change DSP Order" };
-
 	ExtendedTabbedButtonBar tabbedComponent;
 
     void addTabsFromDSPOrder(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order dspOrder);
