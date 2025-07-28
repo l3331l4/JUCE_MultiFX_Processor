@@ -289,9 +289,11 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
             {
 				auto entry = random.nextInt(range);
 				option = static_cast<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option>(entry);
-				tabbedComponent.addTab(getNameFromDSPOption(option), juce::Colours::red, -1);
+				auto name = getNameFromDSPOption(option);
+				DBG("Adding tab: " + name);
+				tabbedComponent.addTab(name, juce::Colours::red, -1);
             }
-			DBG(juce::Base64::toBase64(dspOrder.data(), dspOrder.size()));
+			//DBG(juce::Base64::toBase64(dspOrder.data(), dspOrder.size()));
 
 			audioProcessor.dspOrderFifo.push(dspOrder);
 
@@ -301,6 +303,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 	addAndMakeVisible(dspOrderButton);
 	addAndMakeVisible(tabbedComponent);
 	tabbedComponent.addListener(this);
+	startTimerHz(30); // Timer to update the UI
     setSize (600, 400);
 }
 
@@ -335,3 +338,38 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::tabOrderChanged(JUCE_MultiFX_Pr
 {
 	audioProcessor.dspOrderFifo.push(newOrder);
 }
+
+void JUCE_MultiFX_ProcessorAudioProcessorEditor::timerCallback()
+{
+    // This method is called periodically by the timer.
+    // You can use it to update the UI or perform other tasks.
+    // For example, you could update the tab order based on some condition.
+    // Currently, it does nothing.
+    if (audioProcessor.restoreDspOrderFifo.getNumAvailableForReading() == 0)
+        return;
+
+	using T = JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order;
+	T newOrder;
+	newOrder.fill(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option::END_OF_LIST);
+    auto empty = newOrder;
+    while (audioProcessor.restoreDspOrderFifo.pull(newOrder))
+    {
+        ;
+    }
+
+    if (newOrder != empty)
+    {
+		addTabsFromDSPOrder(newOrder);
+	}
+}
+
+void JUCE_MultiFX_ProcessorAudioProcessorEditor::addTabsFromDSPOrder(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order newOrder)
+{
+    tabbedComponent.clearTabs();
+    for (auto v : newOrder)
+    {
+		tabbedComponent.addTab(getNameFromDSPOption(v), juce::Colours::red, -1);
+	}
+
+	audioProcessor.dspOrderFifo.push(newOrder);
+}   

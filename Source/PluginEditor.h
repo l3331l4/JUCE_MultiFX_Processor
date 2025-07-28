@@ -87,7 +87,8 @@ private:
 /**
 */
 class JUCE_MultiFX_ProcessorAudioProcessorEditor  : public juce::AudioProcessorEditor,
-	ExtendedTabbedButtonBar::Listener
+	ExtendedTabbedButtonBar::Listener,
+    juce::Timer
 {
 public:
     JUCE_MultiFX_ProcessorAudioProcessorEditor (JUCE_MultiFX_ProcessorAudioProcessor&);
@@ -98,7 +99,7 @@ public:
     void resized() override;
 
 	void tabOrderChanged(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order newOrder) override;
-
+	void timerCallback() override;
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -107,6 +108,8 @@ private:
 	juce::TextButton dspOrderButton{ "Change DSP Order" };
 
 	ExtendedTabbedButtonBar tabbedComponent;
+
+    void addTabsFromDSPOrder(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order dspOrder);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JUCE_MultiFX_ProcessorAudioProcessorEditor)
 };

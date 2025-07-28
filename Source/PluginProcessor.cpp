@@ -936,6 +936,7 @@ void JUCE_MultiFX_ProcessorAudioProcessor::setStateInformation (const void* data
             auto order = juce::VariantConverter<JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order>::fromVar(
                 apvts.state.getProperty("dspOrder"));
             dspOrderFifo.push(order);
+			restoreDspOrderFifo.push(order);
         }
         DBG(apvts.state.toXmlString());
 
