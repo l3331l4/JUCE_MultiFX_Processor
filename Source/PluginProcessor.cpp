@@ -700,7 +700,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	// TODO: drag to reorder GUI
 	// TODO: GUI design for each DSP option
     // TODO: metering
 	// TODO: wet/dry mix control [STRETCH]

@@ -185,9 +185,27 @@ void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails& dragSourceDetail
         auto previousTab = getTabButton(previousTabIndex);
         auto nextTab = getTabButton(nextTabIndex);
 
+#define DEBUG_TAB_MOVEMENTS false
+#if DEBUG_TAB_MOVEMENTS
+
+        auto getButtonName = [](auto* button) -> juce::String 
+            {
+                if (button != nullptr)
+                    return button->getButtonText();
+                return "None";
+			};
+		juce::String prevName = getButtonName(previousTab);
+		jassert(prevName.isNotEmpty());
+		juce::String nextName = getButtonName(nextTab);
+		jassert(nextName.isNotEmpty());
+		DBG("ETBB::itemDragMove prev: [" << prevName << "] next: [" << nextName << "]");
+#endif
+
+		auto centreX = tabButtonBeingDragged->getBounds().getCentreX();
+
         if (previousTab == nullptr && nextTab != nullptr)
         {
-            if (tabButtonBeingDragged->getX() > nextTab->getBounds().getCentreX())
+            if (centreX > nextTab->getX() )
             {
 				moveTab(idx, nextTabIndex);
             }
@@ -201,15 +219,17 @@ void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails& dragSourceDetail
         }
         else 
         {
-            if (tabButtonBeingDragged->getX() > nextTab->getBounds().getCentreX())
+            if (centreX > nextTab->getX())
             {
                 moveTab(idx, nextTabIndex);
             }
-            else if (tabButtonBeingDragged->getX() < previousTab->getBounds().getCentreX())
+            else if (centreX < previousTab->getRight())
             {
                 moveTab(idx, previousTabIndex);
             }
         }
+
+		tabButtonBeingDragged->toFront(true);
     }
 }
 
