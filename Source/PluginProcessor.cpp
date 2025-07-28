@@ -81,6 +81,8 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 		dspOrder[i] = static_cast<DSP_Option>(i);
 	}
 
+	restoreDspOrderFifo.push(dspOrder);
+
     auto floatParams = std::array
     {
 		&phaserRateHz,
