@@ -319,6 +319,8 @@ void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::prepare(const juce::d
         p->prepare(spec);
         p->reset();
     }
+
+	overdrive.dsp.setCutoffFrequencyHz(20000.f);
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessor::releaseResources()
@@ -361,7 +363,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     /*
     Phaser:
     Rate: hz
-    Depth: 0 to 1
+    Depth: 0 to 100
     Center freq: hz
     Feedback: -1 to 1
     Mix: 0 to 1
@@ -379,8 +381,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{name, versionHint},
         name,
-        juce::NormalisableRange<float>(0.01f, 1.f, 0.01f, 1.f),
-        0.05f,
+        juce::NormalisableRange<float>(0.0f, 100.f, 0.1f, 1.f),
+        5.f,
         "%"
 	));
 
@@ -396,7 +398,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{name, versionHint},
         name,
-        juce::NormalisableRange<float>(-1.f, 1.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(-100.f, 100.f, 0.1f, 1.f),
         0.0f,
         "%"
     ));
@@ -404,8 +406,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{name, versionHint},
         name,
-        juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f),
-        0.5f,
+        juce::NormalisableRange<float>(0.f, 100.f, 0.1f, 1.f),
+        50.f,
         "%"
 	));
 
@@ -429,7 +431,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(0.01f, 100.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(0.01f, 15.f, 0.01f, 1.f),
         0.9f,
         "Hz"
     ));
@@ -438,8 +440,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(0.01f, 1.f, 0.01f, 1.f),
-        0.5f,
+        juce::NormalisableRange<float>(0.f, 100.f, 0.1f, 1.f),
+        5.f,
         "%"
     ));
 
@@ -447,7 +449,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(1.f, 100.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(0.01f, 20.f, 0.01f, 1.f),
         3.f,
         "Ms"
     ));
@@ -456,7 +458,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(-1.f, 1.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(-100.f, 100.f, 0.1f, 1.f),
         0.0f,
         "%"
     ));
@@ -465,7 +467,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(0.0f, 1.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(0.0f, 100.f, 0.1f, 5.f),
         0.5f,
         "%"
     ));
@@ -529,9 +531,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(0.0f, 1.f, 0.01f, 1.f),
+        juce::NormalisableRange<float>(0.f, 100.f, 0.1f, 1.f),
         0.0f,
-        ""
+        "%"
     ));
 
 	name = getLadderFilterDriveName();
@@ -580,8 +582,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
-        1.f,
+        juce::NormalisableRange<float>(0.01f, 100.f, 0.01f, 1.f),
+        0.72f,
         ""
     ));
 
@@ -607,22 +609,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
 void JUCE_MultiFX_ProcessorAudioProcessor::MonoChannelDSP::updateDSPFromParams()
 {
     phaser.dsp.setRate(p.phaserRateHzSmoother.getCurrentValue());
-    phaser.dsp.setDepth(p.phaserDepthPercentSmoother.getCurrentValue());
+    phaser.dsp.setDepth(p.phaserDepthPercentSmoother.getCurrentValue() * 0.01f );
     phaser.dsp.setCentreFrequency(p.phaserCenterFreqHzSmoother.getCurrentValue());
-    phaser.dsp.setFeedback(p.phaserFeedbackPercentSmoother.getCurrentValue());
-    phaser.dsp.setMix(p.phaserMixPercentSmoother.getCurrentValue());
+    phaser.dsp.setFeedback(p.phaserFeedbackPercentSmoother.getCurrentValue() * 0.01f);
+    phaser.dsp.setMix(p.phaserMixPercentSmoother.getCurrentValue() * 0.01f);
 
     chorus.dsp.setRate(p.chorusRateHzSmoother.getCurrentValue());
-    chorus.dsp.setDepth(p.chorusDepthPercentSmoother.getCurrentValue());
+    chorus.dsp.setDepth(p.chorusDepthPercentSmoother.getCurrentValue() * 0.01f);
     chorus.dsp.setCentreDelay(p.chorusCenterDelayMsSmoother.getCurrentValue());
-    chorus.dsp.setFeedback(p.chorusFeedbackPercentSmoother.getCurrentValue());
-    chorus.dsp.setMix(p.chorusMixPercentSmoother.getCurrentValue());
+    chorus.dsp.setFeedback(p.chorusFeedbackPercentSmoother.getCurrentValue() * 0.01f);
+    chorus.dsp.setMix(p.chorusMixPercentSmoother.getCurrentValue() * 0.01f);
 
     overdrive.dsp.setDrive(p.overdriveSaturationSmoother.getCurrentValue());
 
     ladderFilter.dsp.setMode(static_cast<juce::dsp::LadderFilter<float>::Mode>(p.ladderFilterMode->getIndex()));
     ladderFilter.dsp.setCutoffFrequencyHz(p.ladderFilterCutoffHzSmoother.getCurrentValue());
-    ladderFilter.dsp.setResonance(p.ladderFilterResonanceSmoother.getCurrentValue());
+    ladderFilter.dsp.setResonance(p.ladderFilterResonanceSmoother.getCurrentValue() * 0.01f);
     ladderFilter.dsp.setDrive(p.ladderFilterDriveSmoother.getCurrentValue());
 
     auto sampleRate = p.getSampleRate();
