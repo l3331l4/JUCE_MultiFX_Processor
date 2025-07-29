@@ -5,6 +5,19 @@
               jucerFormatVersion="1" cppLanguageStandard="20">
   <MAINGROUP id="ilFSzP" name="JUCE_MultiFX_Processor">
     <GROUP id="{FE41FCDF-6ADB-AA7B-2F0A-7F8540FA9483}" name="Source">
+      <GROUP id="{053772E1-E4E1-F0AC-9268-9FAF7D9383BF}" name="GUI">
+        <FILE id="flxlGo" name="CustomButtons.cpp" compile="1" resource="0"
+              file="SimpleMultiBandComp/Source/GUI/CustomButtons.cpp"/>
+        <FILE id="iisvkf" name="CustomButtons.h" compile="0" resource="0" file="SimpleMultiBandComp/Source/GUI/CustomButtons.h"/>
+        <FILE id="OpnlyV" name="LookAndFeel.cpp" compile="1" resource="0" file="SimpleMultiBandComp/Source/GUI/LookAndFeel.cpp"/>
+        <FILE id="RIkeTk" name="LookAndFeel.h" compile="0" resource="0" file="SimpleMultiBandComp/Source/GUI/LookAndFeel.h"/>
+        <FILE id="WX3Ver" name="RotarySliderWithLabels.cpp" compile="1" resource="0"
+              file="SimpleMultiBandComp/Source/GUI/RotarySliderWithLabels.cpp"/>
+        <FILE id="MFadv4" name="RotarySliderWithLabels.h" compile="0" resource="0"
+              file="SimpleMultiBandComp/Source/GUI/RotarySliderWithLabels.h"/>
+        <FILE id="Bqf5MF" name="Utilities.cpp" compile="1" resource="0" file="SimpleMultiBandComp/Source/GUI/Utilities.cpp"/>
+        <FILE id="iAc94x" name="Utilities.h" compile="0" resource="0" file="SimpleMultiBandComp/Source/GUI/Utilities.h"/>
+      </GROUP>
       <GROUP id="{42EBA5AF-F2FE-9C9D-164C-6B632EA762F7}" name="DSP">
         <FILE id="RptIrh" name="Fifo.h" compile="0" resource="0" file="SimpleMultiBandComp/Source/DSP/Fifo.h"/>
       </GROUP>
