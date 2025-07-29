@@ -82,9 +82,11 @@ private:
 
 };
 
+struct RotarySliderWithLabels;
+
 struct DSP_Gui : juce::Component
 {
-    DSP_Gui(JUCE_MultiFX_ProcessorAudioProcessor& p) : processor(p) {}
+    DSP_Gui(JUCE_MultiFX_ProcessorAudioProcessor& p);
 
 
     void resized() override;
