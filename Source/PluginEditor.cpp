@@ -291,6 +291,13 @@ void ExtendedTabbedButtonBar::removeListener(Listener* l)
     listeners.remove(l);
 }
 
+void ExtendedTabbedButtonBar::currentTabChanged(int newCurrentTabIndex, const juce::String& newCurrentTabName)
+{
+	juce::ignoreUnused(newCurrentTabName);
+    listeners.call([newCurrentTabIndex](Listener& l) {
+        l.selectedTabChanged(newCurrentTabIndex);
+		});
+}
 
 //==============================================================================
 DSP_Gui::DSP_Gui(JUCE_MultiFX_ProcessorAudioProcessor& proc)
@@ -471,6 +478,23 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::timerCallback()
     {
 		addTabsFromDSPOrder(newOrder);
 	}
+
+    if (selectedTabAttachment == nullptr)
+    {
+        selectedTabAttachment = std::make_unique<juce::ParameterAttachment>(*audioProcessor.selectedTab,[this](float tabNum)
+            {
+				auto newTabNum = static_cast<int>(tabNum);
+                if (juce::isPositiveAndBelow(newTabNum, tabbedComponent.getNumTabs()))
+                {
+					tabbedComponent.setCurrentTabIndex(newTabNum);
+                }
+                else
+                {
+					jassertfalse; // Invalid tab index
+                }
+            });
+		selectedTabAttachment->sendInitialUpdate();
+    }
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessorEditor::addTabsFromDSPOrder(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order newOrder)
@@ -496,4 +520,13 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::rebuildInterface()
 		jassert(params.empty() == false); // Ensure we have parameters for the selected DSP option
 		dspGUI.rebuildInterface(params);
     }
+}
+
+void JUCE_MultiFX_ProcessorAudioProcessorEditor::selectedTabChanged(int newCurrentTabIndex)
+{
+    if ( selectedTabAttachment )
+    {
+		selectedTabAttachment->setValueAsCompleteGesture(static_cast<float>(newCurrentTabIndex));
+		rebuildInterface();
+	}
 }
