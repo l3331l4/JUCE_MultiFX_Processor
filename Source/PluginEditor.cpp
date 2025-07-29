@@ -335,7 +335,8 @@ void DSP_Gui::resized()
 
 void DSP_Gui::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::black);
+    //g.fillAll(juce::Colours::black);
+    g.fillAll(juce::Colour(233, 236, 241));
 }
 
 void DSP_Gui::rebuildInterface(std::vector< juce::RangedAudioParameter* > params)
@@ -404,7 +405,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-
+    setLookAndFeel(&lookAndFeel);
 	addAndMakeVisible(tabbedComponent);
 	addAndMakeVisible(dspGUI);
 
@@ -416,6 +417,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 
 JUCE_MultiFX_ProcessorAudioProcessorEditor::~JUCE_MultiFX_ProcessorAudioProcessorEditor()
 {
+    setLookAndFeel(nullptr);
 	tabbedComponent.removeListener(this);
 }
 
