@@ -95,7 +95,7 @@ struct DSP_Gui : juce::Component
     void rebuildInterface(std::vector< juce::RangedAudioParameter* > params);
 
 	JUCE_MultiFX_ProcessorAudioProcessor& processor;
-    std::vector<std::unique_ptr<juce::Slider>> sliders;
+    std::vector<std::unique_ptr<RotarySliderWithLabels>> sliders;
     std::vector<std::unique_ptr<juce::ComboBox>> comboBoxes;
     std::vector<std::unique_ptr<juce::Button>> buttons;
 
