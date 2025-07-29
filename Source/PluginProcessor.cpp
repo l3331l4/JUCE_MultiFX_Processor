@@ -62,6 +62,8 @@ auto getGeneralFilterChoices()
     };
 }
 
+auto getSelectedTabName() { return juce::String("Selected Tab"); }
+
 //==============================================================================
 JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -169,6 +171,18 @@ JUCE_MultiFX_ProcessorAudioProcessor::JUCE_MultiFX_ProcessorAudioProcessor()
     };
 
 	initCachedParams<juce::AudioParameterBool*>(bypassParams, bypassNameFuncs);
+
+    auto intParams = std::array
+    {
+        &selectedTab,
+	};
+
+    auto intFuncs = std::array
+    {
+        &getSelectedTabName,
+	};
+
+	initCachedParams<juce::AudioParameterInt*>(intParams, intFuncs);
 
 }
 
@@ -602,6 +616,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
         name,
         false
 	));
+
+	name = getSelectedTabName();
+    layout.add(std::make_unique<juce::AudioParameterInt>(
+        juce::ParameterID{ name, versionHint },
+        name,
+        0, 
+        static_cast<int>(DSP_Option::END_OF_LIST) - 1,
+		static_cast<int>(DSP_Option::Chorus)
+    ));
 
 	return layout;
 }
