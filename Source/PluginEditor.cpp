@@ -416,6 +416,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 	addAndMakeVisible(tabbedComponent);
 	addAndMakeVisible(dspGUI);
 
+	audioProcessor.guiNeedsLatestDspOrder.set(true);
 
 	tabbedComponent.addListener(this);
 	startTimerHz(30); // Timer to update the UI

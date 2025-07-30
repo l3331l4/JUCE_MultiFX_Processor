@@ -805,6 +805,11 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     if ( newDSPOrder != DSP_Order() )
 		dspOrder = newDSPOrder;
 
+    if (guiNeedsLatestDspOrder.compareAndSetBool(false, true))
+    {
+		restoreDspOrderFifo.push(dspOrder);
+    }
+
 	/*auto block = juce::dsp::AudioBlock<float>(buffer);
 
 	leftChannel.process(block.getSingleChannelBlock(0), dspOrder);
