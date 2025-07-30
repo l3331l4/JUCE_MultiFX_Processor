@@ -815,8 +815,12 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 	leftChannel.process(block.getSingleChannelBlock(0), dspOrder);
 	rightChannel.process(block.getSingleChannelBlock(1), dspOrder);*/
 
-	auto samplesRemaining = buffer.getNumSamples();
+    const auto numSamples = buffer.getNumSamples();
+	auto samplesRemaining = numSamples;
 	auto maxSamplesToProcess = juce::jmin(samplesRemaining, 64);
+
+	leftPreRMS.set(buffer.getRMSLevel(0, 0, numSamples));
+	rightPreRMS.set(buffer.getRMSLevel(1, 0, numSamples));
 
     auto block = juce::dsp::AudioBlock<float>(buffer);
     size_t startSample = 0;
@@ -836,6 +840,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 		startSample += samplesToProcess;
 		samplesRemaining -= samplesToProcess;
     }
+
+	leftPostRMS.set(buffer.getRMSLevel(0, 0, numSamples));
+	rightPostRMS.set(buffer.getRMSLevel(1, 0, numSamples));
 
 }
 
