@@ -780,7 +780,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
         buffer.clear (i, 0, buffer.getNumSamples());
 
 	// TODO: GUI design for each DSP option
-    // TODO: metering
 	// TODO: wet/dry mix control [STRETCH]
 	// TODO: mono and stereo versions [STRETCH]
 	// TODO: modulators (eg. LFOs, envelopes, etc.) [STRETCH]

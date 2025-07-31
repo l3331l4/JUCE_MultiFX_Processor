@@ -141,6 +141,19 @@ void ExtendedTabbedButtonBar::itemDragEnter(const SourceDetails& dragSourceDetai
     juce::DragAndDropTarget::itemDragEnter(dragSourceDetails);
 }
 
+struct Comparator
+{
+
+    static int compareElements(juce::TabBarButton* first, juce::TabBarButton* second)
+    {
+        if (first->getX() < second->getX())
+            return -1;
+        else if (first->getX() > second->getX())
+			return 1;
+		return 0; // They are equal in terms of X position
+	}
+};
+
 juce::Array<juce::TabBarButton*> ExtendedTabbedButtonBar::getTabs()
 {
     auto numTabs = getNumTabs();
@@ -150,6 +163,11 @@ juce::Array<juce::TabBarButton*> ExtendedTabbedButtonBar::getTabs()
     {
         tabs.getReference(i) = getTabButton(i);
     }
+
+    auto unsorted = tabs;
+    Comparator comparator;
+    tabs.sort(comparator);
+
     return tabs;
 }
 
@@ -268,6 +286,14 @@ void ExtendedTabbedButtonBar::mouseDown(const juce::MouseEvent& e)
 {
     if (auto tabButtonBeingDragged = dynamic_cast<ExtendedTabBarButton*>(e.originalComponent))
     {
+
+        auto tabs = getTabs();
+		auto idx = tabs.indexOf(tabButtonBeingDragged);
+        if (idx != -1) 
+        {
+			setCurrentTabIndex(idx);
+        }
+
 		startDragging(tabButtonBeingDragged->TabBarButton::getTitle(),
             tabButtonBeingDragged, dragImage);
     }
