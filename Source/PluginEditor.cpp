@@ -293,11 +293,25 @@ void ExtendedTabbedButtonBar::mouseDown(const juce::MouseEvent& e)
         if (idx != -1) 
         {
 			setCurrentTabIndex(idx);
+			setTabColours();
         }
 
 		startDragging(tabButtonBeingDragged->TabBarButton::getTitle(),
             tabButtonBeingDragged, dragImage);
     }
+}
+
+void ExtendedTabbedButtonBar::setTabColours()
+{
+	auto tabs = getTabs();
+    for (int i = 0; i < tabs.size(); ++i)
+    {
+        auto colour = tabs[i]->isFrontTab() ? juce::Colours::skyblue :
+            juce::Colours::darkgrey;
+
+        setTabBackgroundColour(i, colour);
+        tabs[i]->repaint();
+	}
 }
 
 struct PowerButtonWithParam : PowerButton
@@ -394,8 +408,8 @@ void DSP_Gui::resized()
 
 void DSP_Gui::paint(juce::Graphics& g)
 {
-    //g.fillAll(juce::Colours::black);
-    g.fillAll(juce::Colour(233, 236, 241));
+    g.fillAll(juce::Colours::black);
+    //g.fillAll(juce::Colour(233, 236, 241));
 }
 
 void DSP_Gui::rebuildInterface(std::vector< juce::RangedAudioParameter* > params)
@@ -703,6 +717,7 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::addTabsFromDSPOrder(JUCE_MultiF
         }
     }
 
+    tabbedComponent.setTabColours();
     rebuildInterface();
 	audioProcessor.dspOrderFifo.push(newOrder);
 }   

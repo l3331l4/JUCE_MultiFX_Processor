@@ -40,6 +40,8 @@ struct ExtendedTabbedButtonBar : juce::TabbedButtonBar, juce::DragAndDropTarget,
 
     void currentTabChanged(int newCurrentTabIndex, const juce::String& newCurrentTabName) override;
 
+    void setTabColours();
+
 private:
     juce::TabBarButton* findDraggedItem(const SourceDetails& dragSourceDetails);
 	int FindDraggedItemIndex(const SourceDetails& dragSourceDetails);
