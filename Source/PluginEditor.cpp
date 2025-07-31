@@ -374,6 +374,16 @@ void DSP_Gui::paint(juce::Graphics& g)
 
 void DSP_Gui::rebuildInterface(std::vector< juce::RangedAudioParameter* > params)
 {
+    if (params == currentParams)
+    {
+		// No need to rebuild if the parameters haven't changed
+		DBG("INTERFACE REBUILD SKIPPED: No changes in parameters");
+        return;
+    }
+
+	// Interface rebuild
+	currentParams = params;
+
 	sliderAttachments.clear();
 	comboBoxAttachments.clear();
 	buttonAttachments.clear();
@@ -643,7 +653,8 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::selectedTabChanged(int newCurre
 {
     if ( selectedTabAttachment )
     {
+        rebuildInterface();
 		selectedTabAttachment->setValueAsCompleteGesture(static_cast<float>(newCurrentTabIndex));
-		rebuildInterface();
+		
 	}
 }
