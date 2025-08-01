@@ -540,6 +540,8 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 	addAndMakeVisible(tabbedComponent);
 	addAndMakeVisible(dspGUI);
 
+	addAndMakeVisible(analyzer);
+
     inGainControl = std::make_unique<RotarySliderWithLabels>(
 		audioProcessor.inputGain, "dB", "IN");
 
@@ -562,7 +564,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 
 	tabbedComponent.addListener(this);
 	startTimerHz(30); // Timer to update the UI
-    setSize (768, 450 + ioControlSize);
+    setSize (768, 450);
 }
 
 JUCE_MultiFX_ProcessorAudioProcessorEditor::~JUCE_MultiFX_ProcessorAudioProcessorEditor()
@@ -676,15 +678,17 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 	auto bounds = getLocalBounds();
-	auto gainArea = bounds.removeFromBottom(ioControlSize);
+	/*auto gainArea = bounds.removeFromBottom(ioControlSize);
 	inGainControl->setBounds(gainArea.removeFromLeft(ioControlSize));
-	outGainControl->setBounds(gainArea.removeFromRight(ioControlSize));
+	outGainControl->setBounds(gainArea.removeFromRight(ioControlSize));*/
 
 	auto leftMeterArea = bounds.removeFromLeft(meterWidth);
 	auto rightMeterArea = bounds.removeFromRight(meterWidth);
-	juce::ignoreUnused(leftMeterArea, rightMeterArea);
+	inGainControl->setBounds(leftMeterArea.removeFromBottom(ioControlSize));
+    outGainControl->setBounds(rightMeterArea.removeFromBottom(ioControlSize));
 
-    bounds.removeFromTop(10);
+	analyzer.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.7));
+
     tabbedComponent.setBounds(bounds.removeFromTop(30));
 	dspGUI.setBounds(bounds);
 

@@ -287,6 +287,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::prepareToPlay (double sampleRate, int
     inputGainDSP.prepare(spec);
     outputGainDSP.prepare(spec);
 
+    leftSCSF.prepare(samplesPerBlock);
+	rightSCSF.prepare(samplesPerBlock);
+
 }
 
 void JUCE_MultiFX_ProcessorAudioProcessor::updateSmoothersFromParams(int numSamplesToSkip, SmootherUpdateMode init)
@@ -816,7 +819,6 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-	// TODO: GUI design for each DSP option
 	// TODO: wet/dry mix control [STRETCH]
 	// TODO: mono and stereo versions [STRETCH]
 	// TODO: modulators (eg. LFOs, envelopes, etc.) [STRETCH]
@@ -892,6 +894,9 @@ void JUCE_MultiFX_ProcessorAudioProcessor::processBlock (juce::AudioBuffer<float
 
 	leftPostRMS.set(buffer.getRMSLevel(0, 0, numSamples));
 	rightPostRMS.set(buffer.getRMSLevel(1, 0, numSamples));
+
+    leftSCSF.update(buffer);
+	rightSCSF.update(buffer);
 
 }
 
