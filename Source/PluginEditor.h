@@ -11,6 +11,21 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include <LookAndFeel.h>
+#include <CustomButtons.h> // PowerButton
+
+template<typename ParamsContainer>
+static juce::AudioParameterBool* findBypassParam(ParamsContainer& params)
+{
+    for (auto* p : params)
+    {
+        if (auto* bypass = dynamic_cast<juce::AudioParameterBool*>(p))
+        {
+            if (bypass->getName(100).contains("Bypass"))
+                return bypass;
+        }
+    }
+    return nullptr;
+}
 
 struct ExtendedTabbedButtonBar : juce::TabbedButtonBar, juce::DragAndDropTarget, juce::DragAndDropContainer
 {
@@ -102,6 +117,7 @@ struct DSP_Gui : juce::Component
     void paint(juce::Graphics& g) override;
 
     void rebuildInterface(std::vector< juce::RangedAudioParameter* > params);
+	void toggleSliderEnablement(bool enabled);
 
 	JUCE_MultiFX_ProcessorAudioProcessor& processor;
     std::vector<std::unique_ptr<RotarySliderWithLabels>> sliders;
@@ -115,6 +131,17 @@ struct DSP_Gui : juce::Component
 	std::vector< juce::RangedAudioParameter* > currentParams;
 };
 
+//==============================================================================
+
+struct PowerButtonWithParam : PowerButton
+{
+    PowerButtonWithParam(juce::AudioParameterBool* p);
+    void changeAttachment(juce::AudioParameterBool* p);
+	juce::AudioParameterBool* getParam() const { return param; }
+private:
+    std::unique_ptr<juce::ButtonParameterAttachment> attachment;
+	juce::AudioParameterBool* param;
+};
 
 //==============================================================================
 /**
@@ -155,6 +182,8 @@ private:
 
     void addTabsFromDSPOrder(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Order dspOrder);
     void rebuildInterface();
+
+    void refreshDSPGUIControlEnablement(PowerButtonWithParam* button);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JUCE_MultiFX_ProcessorAudioProcessorEditor)
 };

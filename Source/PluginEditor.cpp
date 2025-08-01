@@ -10,7 +10,6 @@
 #include "PluginEditor.h"
 #include <RotarySliderWithLabels.h>
 #include <Utilities.h>
-#include <CustomButtons.h>
 
 static juce::String getNameFromDSPOption(JUCE_MultiFX_ProcessorAudioProcessor::DSP_Option option)
 {
@@ -340,25 +339,18 @@ void ExtendedTabbedButtonBar::setTabColours()
 	}
 }
 
-struct PowerButtonWithParam : PowerButton
-{
-    PowerButtonWithParam(juce::RangedAudioParameter* p);
-    void changeAttachment(juce::RangedAudioParameter* p);
-private:
-    std::unique_ptr<juce::ButtonParameterAttachment> attachment;
-};
-
-PowerButtonWithParam::PowerButtonWithParam(juce::RangedAudioParameter* p)
+PowerButtonWithParam::PowerButtonWithParam(juce::AudioParameterBool* p)
 {
     jassert(p != nullptr);
     changeAttachment(p);
 }
 
-void PowerButtonWithParam::changeAttachment(juce::RangedAudioParameter* p)
+void PowerButtonWithParam::changeAttachment(juce::AudioParameterBool* p)
 {
     attachment.reset();
     if (p != nullptr)
     {
+        param = p;
         attachment = std::make_unique<juce::ButtonParameterAttachment>(*p, *this);
         attachment->sendInitialUpdate();
     }
@@ -526,6 +518,16 @@ void DSP_Gui::rebuildInterface(std::vector< juce::RangedAudioParameter* > params
 
 	resized();
        
+}
+
+void DSP_Gui::toggleSliderEnablement(bool enabled)
+{
+    for (auto& slider : sliders)
+		slider->setEnabled(enabled);
+    for (auto& cb : comboBoxes)
+		cb->setEnabled(enabled);
+    for (auto& btn : buttons)
+		btn->setEnabled(enabled);
 }
 
 //==============================================================================
@@ -751,18 +753,25 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::addTabsFromDSPOrder(JUCE_MultiF
             auto order = newOrder[i];
             auto params = audioProcessor.getParamsForOption(order);
 
-            for (auto& p : params)
+            if (auto bypass = findBypassParam(params))
             {
-                if (auto bypass = dynamic_cast<juce::AudioParameterBool*>(p))
-                {
+                auto pbwp = std::make_unique<PowerButtonWithParam>(bypass);
+                pbwp->setSize(size, size);
+                
 
-                    if (bypass->name.containsIgnoreCase("bypass"))
+                pbwp->onClick = [this, btn = pbwp.get()]()
+                {
+                    auto idx = tabbedComponent.getCurrentTabIndex();
+                    if (auto tabButton = tabbedComponent.getTabButton(idx))
                     {
-                        auto pbwp = std::make_unique<PowerButtonWithParam>(bypass);
-                        pbwp->setSize(size, size);
-                        tab->setExtraComponent(pbwp.release(), juce::TabBarButton::ExtraComponentPlacement::beforeText);
+                        if (tabButton->getExtraComponent() == btn)
+                        {
+							refreshDSPGUIControlEnablement(btn);
+                        }
                     }
-                }
+                };
+
+                tab->setExtraComponent(pbwp.release(), juce::TabBarButton::ExtraComponentPlacement::beforeText);
             }
         }
     }
@@ -782,6 +791,10 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::rebuildInterface()
 		auto params = audioProcessor.getParamsForOption(option);
 		jassert(params.empty() == false); // Ensure we have parameters for the selected DSP option
 		dspGUI.rebuildInterface(params);
+        if (auto btn = dynamic_cast<PowerButtonWithParam*>(etbb->getExtraComponent()))
+        {
+			refreshDSPGUIControlEnablement(btn);
+        }
     }
 }
 
@@ -794,4 +807,15 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::selectedTabChanged(int newCurre
 		selectedTabAttachment->setValueAsCompleteGesture(static_cast<float>(newCurrentTabIndex));
 		
 	}
+}
+
+void JUCE_MultiFX_ProcessorAudioProcessorEditor::refreshDSPGUIControlEnablement(PowerButtonWithParam* button)
+{
+    if (button != nullptr)
+    {
+        if ( auto bypass = button->getParam() )
+        {
+            dspGUI.toggleSliderEnablement(bypass->get() == false);
+		}
+    }
 }
