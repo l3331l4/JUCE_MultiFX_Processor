@@ -790,6 +790,7 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::selectedTabChanged(int newCurre
     if ( selectedTabAttachment )
     {
         rebuildInterface();
+        tabbedComponent.setTabColours();
 		selectedTabAttachment->setValueAsCompleteGesture(static_cast<float>(newCurrentTabIndex));
 		
 	}
