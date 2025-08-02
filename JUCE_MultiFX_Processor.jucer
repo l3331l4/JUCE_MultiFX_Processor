@@ -6,6 +6,36 @@
   <MAINGROUP id="ilFSzP" name="JUCE_MultiFX_Processor">
     <GROUP id="{FE41FCDF-6ADB-AA7B-2F0A-7F8540FA9483}" name="Source">
       <GROUP id="{053772E1-E4E1-F0AC-9268-9FAF7D9383BF}" name="GUI">
+        <GROUP id="{5343ED06-C58B-D10E-B963-9CAA2D24759D}" name="Fonts">
+          <FILE id="l3A1Gq" name="IBMPlexMono-Bold.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Bold.ttf"/>
+          <FILE id="SJ2Aem" name="IBMPlexMono-BoldItalic.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-BoldItalic.ttf"/>
+          <FILE id="ypcGBw" name="IBMPlexMono-ExtraLight.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-ExtraLight.ttf"/>
+          <FILE id="cHGzof" name="IBMPlexMono-ExtraLightItalic.ttf" compile="0"
+                resource="1" file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-ExtraLightItalic.ttf"/>
+          <FILE id="JHjtzn" name="IBMPlexMono-Italic.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Italic.ttf"/>
+          <FILE id="sSG9JZ" name="IBMPlexMono-Light.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Light.ttf"/>
+          <FILE id="jMT3Ie" name="IBMPlexMono-LightItalic.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-LightItalic.ttf"/>
+          <FILE id="zTZe1f" name="IBMPlexMono-Medium.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Medium.ttf"/>
+          <FILE id="mJtjm2" name="IBMPlexMono-MediumItalic.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-MediumItalic.ttf"/>
+          <FILE id="mLYFNP" name="IBMPlexMono-Regular.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Regular.ttf"/>
+          <FILE id="jxyReV" name="IBMPlexMono-SemiBold.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-SemiBold.ttf"/>
+          <FILE id="nIHgU2" name="IBMPlexMono-SemiBoldItalic.ttf" compile="0"
+                resource="1" file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-SemiBoldItalic.ttf"/>
+          <FILE id="GKUp6v" name="IBMPlexMono-Thin.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-Thin.ttf"/>
+          <FILE id="ZlQMae" name="IBMPlexMono-ThinItalic.ttf" compile="0" resource="1"
+                file="SimpleMultiBandComp/Source/GUI/Fonts/IBMPlexMono-ThinItalic.ttf"/>
+        </GROUP>
         <FILE id="HD6uk2" name="AnalyzerPathGenerator.h" compile="0" resource="0"
               file="SimpleMultiBandComp/Source/GUI/AnalyzerPathGenerator.h"/>
         <FILE id="flxlGo" name="CustomButtons.cpp" compile="1" resource="0"
