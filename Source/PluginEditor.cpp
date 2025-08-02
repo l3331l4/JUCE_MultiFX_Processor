@@ -80,7 +80,8 @@ void HorizontalConstrainer::checkBounds(juce::Rectangle<int>& bounds,
     else
     {
         bounds.setX(juce::jlimit(limits.getX(),
-            limits.getY(),bounds.getX()));
+            limits.getRight() - bounds.getWidth(),
+            bounds.getX()));
 	}
 
 	}
@@ -100,10 +101,21 @@ ExtendedTabBarButton::ExtendedTabBarButton(const juce::String& name, juce::Tabbe
 
 int ExtendedTabBarButton::getBestTabLength(int depth)
 {
-	auto bestWidth = getLookAndFeel().getTabButtonBestWidth(*this, depth);
-	auto& bar = getTabbedButtonBar();
+    auto& bar = getTabbedButtonBar();
+    auto totalWidth = bar.getWidth();
+    auto numTabs = bar.getNumTabs();
+    auto overlap = getLookAndFeel().getTabButtonOverlap(depth);
 
-	return juce::jmax(bestWidth, bar.getWidth() / bar.getNumTabs());
+    auto buttonWidth = (totalWidth + (overlap * (numTabs - 1))) / numTabs;
+
+    if (getIndex() == numTabs - 1)
+    {
+        auto calculatedTotalWidth = (buttonWidth * (numTabs - 1)) - (overlap * (numTabs - 1));
+        auto remainingWidth = totalWidth - calculatedTotalWidth;
+        return remainingWidth;
+    }
+
+    return buttonWidth;
 }
 
 void ExtendedTabBarButton::mouseDown (const juce::MouseEvent& e)
@@ -215,7 +227,7 @@ void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails &dragSourceDetail
                 if (previousDraggedTabCenterPosition.x < nextTab->getX() && nextTab->getX() <= centreX)
                 {
 					DBG("Swapping " << tabButtonBeingDragged->getName() << " with " << nextTab->getName());
-                    nextTab->setBounds(nextTab->getBounds().withX(previousTab != nullptr ? previousTab->getRight() + 1 : 0));
+                    nextTab->setBounds(nextTab->getBounds().withX(previousTab != nullptr ? previousTab->getRight() : 0));
 					tabs.swap(idx, nextTabIndex);
                 }
             }
@@ -229,7 +241,7 @@ void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails &dragSourceDetail
                 {
 					DBG("Swapping " << tabButtonBeingDragged->getName() << " with " << previousTab->getName());
 					previousTab->setBounds(previousTab->getBounds().withX(nextTab != nullptr ? 
-                        nextTab->getX() - previousTab->getWidth() - 1 : getWidth() - previousTab->getWidth() - 1));
+                        nextTab->getX() - previousTab->getWidth(): getWidth() - previousTab->getWidth()));
 					tabs.swap(idx, previousTabIndex);
                 }
             }
@@ -329,6 +341,7 @@ void ExtendedTabbedButtonBar::mouseDown(const juce::MouseEvent& e)
 void ExtendedTabbedButtonBar::setTabColours()
 {
 	auto tabs = getTabs();
+
     for (int i = 0; i < tabs.size(); ++i)
     {
         auto colour = tabs[i]->isFrontTab() ? ColorScheme::getBackgroundColor() : // Background color for active tab
@@ -537,6 +550,7 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setLookAndFeel(&lookAndFeel);
+
 	addAndMakeVisible(tabbedComponent);
 	addAndMakeVisible(dspGUI);
 
@@ -564,7 +578,9 @@ JUCE_MultiFX_ProcessorAudioProcessorEditor::JUCE_MultiFX_ProcessorAudioProcessor
 
 	tabbedComponent.addListener(this);
 	startTimerHz(30); // Timer to update the UI
-    setSize (768, 450);
+
+	float scaleFactor = 1.2f;
+    setSize (768 * scaleFactor, 450 * scaleFactor);
 }
 
 JUCE_MultiFX_ProcessorAudioProcessorEditor::~JUCE_MultiFX_ProcessorAudioProcessorEditor()
@@ -611,6 +627,9 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
 
     auto drawTicks = [&](auto rect, auto leftMeterRightEdge, auto rightMeterLeftEdge)
         {
+            juce::Font meterFont = lookAndFeel.getIBMPlexMonoFont(static_cast<float>(fontHeight) * 0.7f);
+            g.setFont(meterFont);
+
             for (int i = MAX_DECIBELS; i >= NEGATIVE_INFINITY; i -= 12)
             {
 				auto y = juce::jmap<int>(i, NEGATIVE_INFINITY, MAX_DECIBELS, rect.getBottom(), rect.getY());
