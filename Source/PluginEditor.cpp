@@ -229,7 +229,7 @@ void ExtendedTabbedButtonBar::itemDragMove(const SourceDetails &dragSourceDetail
                 {
 					DBG("Swapping " << tabButtonBeingDragged->getName() << " with " << previousTab->getName());
 					previousTab->setBounds(previousTab->getBounds().withX(nextTab != nullptr ? 
-                        nextTab->getX() - previousTab->getWidth() - 1 : 0));
+                        nextTab->getX() - previousTab->getWidth() - 1 : getWidth() - previousTab->getWidth() - 1));
 					tabs.swap(idx, previousTabIndex);
                 }
             }
@@ -331,8 +331,8 @@ void ExtendedTabbedButtonBar::setTabColours()
 	auto tabs = getTabs();
     for (int i = 0; i < tabs.size(); ++i)
     {
-        auto colour = tabs[i]->isFrontTab() ? juce::Colours::skyblue :
-            juce::Colours::darkgrey;
+        auto colour = tabs[i]->isFrontTab() ? ColorScheme::getBackgroundColor() : // Background color for active tab
+			ColorScheme::getInactiveTabColor(); // Default colour for inactive tabs
 
         setTabBackgroundColour(i, colour);
         tabs[i]->repaint();
@@ -426,8 +426,8 @@ void DSP_Gui::resized()
 
 void DSP_Gui::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::black);
-    //g.fillAll(juce::Colour(233, 236, 241));
+    //g.fillAll(juce::Colours::black);
+    g.fillAll(ColorScheme::getBackgroundColor());
 }
 
 void DSP_Gui::rebuildInterface(std::vector< juce::RangedAudioParameter* > params)
@@ -617,9 +617,11 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
                 auto r = juce::Rectangle<int>(rect.getWidth(), fontHeight);
                 r.setCentre(rect.getCentreX(), y);
 
-				g.setColour(i == 0 ? juce::Colours::black : 
-                    i > 0 ? juce::Colours::red : 
-                juce::Colours::lightsteelblue);
+				g.setColour(i == 0 ? ColorScheme::getTitleColor() :
+                    i > 0 ? ColorScheme::getIndustrialRed() :
+                    ColorScheme::getTitleColor());
+
+                //g.setColour(ColorScheme::getTitleColor());
 
 				g.drawFittedText(juce::String(i), r, juce::Justification::centred, 1);
 
@@ -636,8 +638,6 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
         const juce::Atomic<float>& rightSource,
         const auto& label)
         {
-			g.setColour(juce::Colours::green);
-			g.drawRect(rect);
             rect.reduce(2, 2);
 
 			g.setColour(juce::Colours::black);
@@ -658,18 +658,25 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
         };
 
     auto bounds = getLocalBounds();
-	bounds.removeFromBottom(ioControlSize);
+	auto ioArea = bounds.removeFromBottom(ioControlSize);
 
     auto preMeterArea = bounds.removeFromLeft(meterWidth);
     auto postMeterArea = bounds.removeFromRight(meterWidth);
 
+    juce::Colour ioBgColor = ColorScheme::getBackgroundColor();
+    g.setColour(ioBgColor);
+
+    g.fillRect(preMeterArea);
+    g.fillRect(postMeterArea);
+    g.fillRect(ioArea);
+
     drawMeter(preMeterArea, g, 
         audioProcessor.leftPreRMS, audioProcessor.rightPreRMS,
-		"In");
+		"");
 
     drawMeter(postMeterArea, g,
         audioProcessor.leftPostRMS, audioProcessor.rightPostRMS,
-        "Out");
+        "");
 	
 }
 
@@ -745,7 +752,8 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::addTabsFromDSPOrder(JUCE_MultiF
     tabbedComponent.clearTabs();
     for (auto v : newOrder)
     {
-		tabbedComponent.addTab(getNameFromDSPOption(v), juce::Colours::white, -1);
+		tabbedComponent.addTab(getNameFromDSPOption(v), ColorScheme::getTitleColor(), -1);
+
 	}
 
 	auto numTabs = tabbedComponent.getNumTabs();
