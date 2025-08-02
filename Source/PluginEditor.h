@@ -180,7 +180,7 @@ private:
 	static constexpr int meterWidth = 80;
     static constexpr int fontHeight = 24;
     static constexpr int tickIndent = 8;
-    static constexpr int meterChanWidth = 24;
+    static constexpr int meterChanWidth = 18;
     static constexpr int ioControlSize = 100;
 
 	std::unique_ptr<RotarySliderWithLabels> inGainControl, outGainControl;

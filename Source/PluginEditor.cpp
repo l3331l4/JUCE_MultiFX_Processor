@@ -581,13 +581,13 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
 
     auto fillMeter = [&](auto rect, const auto& rmsSource)
         {
-			g.setColour(juce::Colours::black);
+			g.setColour(ColorScheme::getTitleColor());
 			g.fillRect(rect);
 
 			auto rms = rmsSource.get();
             if (rms > 1.f)
             {
-				g.setColour(juce::Colours::red);
+				g.setColour(ColorScheme::getIndustrialRed());
                 auto lowerLeft = juce::Point<float>(rect.getX(),
                     juce::jmap<float>(juce::Decibels::gainToDecibels(1.f),
                         NEGATIVE_INFINITY, MAX_DECIBELS, rect.getBottom(), rect.getY()));
@@ -621,9 +621,9 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
                     i > 0 ? ColorScheme::getIndustrialRed() :
                     ColorScheme::getTitleColor());
 
-                //g.setColour(ColorScheme::getTitleColor());
-
 				g.drawFittedText(juce::String(i), r, juce::Justification::centred, 1);
+
+				g.setColour(ColorScheme::getBackgroundColor());
 
                 if (i != MAX_DECIBELS && i != NEGATIVE_INFINITY)
                 {
@@ -638,7 +638,7 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
         const juce::Atomic<float>& rightSource,
         const auto& label)
         {
-            rect.reduce(2, 2);
+            rect.reduce(5, 2);
 
 			g.setColour(juce::Colours::black);
 			g.drawText(label, rect.removeFromBottom(fontHeight), juce::Justification::centred);

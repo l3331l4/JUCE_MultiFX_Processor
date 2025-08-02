@@ -522,7 +522,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
         juce::ParameterID{ name, versionHint },
         name,
         juce::NormalisableRange<float>(0.0f, 100.f, 0.1f, 5.f),
-        0.5f,
+        50.f,
         "%"
     ));
 
