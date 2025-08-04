@@ -627,7 +627,7 @@ void JUCE_MultiFX_ProcessorAudioProcessorEditor::paint (juce::Graphics& g)
 
     auto drawTicks = [&](auto rect, auto leftMeterRightEdge, auto rightMeterLeftEdge)
         {
-            juce::Font meterFont = lookAndFeel.getIBMPlexMonoFont(static_cast<float>(fontHeight) * 0.7f);
+            juce::Font meterFont = lookAndFeel.getIBMPlexMonoMediumFont(static_cast<float>(fontHeight) * 0.7f);
             g.setFont(meterFont);
 
             for (int i = MAX_DECIBELS; i >= NEGATIVE_INFINITY; i -= 12)
