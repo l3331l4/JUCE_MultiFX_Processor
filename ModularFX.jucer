@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Qppr7b" name="JUCE_MultiFX_Processor" projectType="audioplug"
-              useAppConfig="0" addUsingNamespaceToJuceHeader="0" displaySplashScreen="1"
-              jucerFormatVersion="1" cppLanguageStandard="20">
-  <MAINGROUP id="ilFSzP" name="JUCE_MultiFX_Processor">
+<JUCERPROJECT id="Qppr7b" name="ModularFX" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              cppLanguageStandard="20" version="1.0.0" pluginVST3Category="Distortion,Filter,Fx,Modulation"
+              companyName="R.L. Audio" companyWebsite="https://github.com/l3331l4"
+              companyEmail="adilr@tcd.ie" pluginCode="Mdfx" pluginManufacturerCode="LeAd"
+              pluginAAXCategory="8192" pluginVSTCategory="kPlugCategEffect">
+  <MAINGROUP id="ilFSzP" name="ModularFX">
     <GROUP id="{FE41FCDF-6ADB-AA7B-2F0A-7F8540FA9483}" name="Source">
       <GROUP id="{053772E1-E4E1-F0AC-9268-9FAF7D9383BF}" name="GUI">
         <GROUP id="{5343ED06-C58B-D10E-B963-9CAA2D24759D}" name="Fonts">
