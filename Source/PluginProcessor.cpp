@@ -576,7 +576,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(20.f, 20000.f, 0.1f, .5f),
+        juce::NormalisableRange<float>(20.f, 20000.f, 0.1f, .4f),
         20000.f,
         "Hz"
     ));
@@ -627,7 +627,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout JUCE_MultiFX_ProcessorAudioP
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         juce::ParameterID{ name, versionHint },
         name,
-        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, .5f),
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, .4f),
         750.f,
         "Hz"
 	));
