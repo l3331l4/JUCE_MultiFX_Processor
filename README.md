@@ -24,13 +24,13 @@ A modular multi-effects audio plugin built with C++20 and the JUCE framework. In
 ## Features
 
 ### Audio Processing
-- **Chorus** – Depth and rate modulation
-- **Phaser** – Phase shifting effect
-- **Overdrive** – Saturation
-- **Ladder Filter** – Moog-style resonant filtering
-- **General Filter** – Peak, Notch, Bandpass, and Allpass modes
-- **Input/Output Gain** – Level control with peak metering
-- **Real-Time Processing** – Zero-latency, live-ready
+- **Chorus** - Depth and rate modulation
+- **Phaser** - Phase shifting effect
+- **Overdrive** - Saturation
+- **Ladder Filter** - Moog-style resonant filtering
+- **General Filter** - Peak, Notch, Bandpass, and Allpass modes
+- **Input/Output Gain** - Level control with peak metering
+- **Real-Time Processing** - Zero-latency, live-ready
 
 ### GUI Features
 - **Modular Architecture** - Drag and drop module reordering for effect chains
@@ -50,7 +50,7 @@ A modular multi-effects audio plugin built with C++20 and the JUCE framework. In
 
 ### Supported Formats
 - VST3
-- AU (Audio Units)
+- AU
 - Standalone Application
 
 ### Platforms
